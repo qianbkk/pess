@@ -9,7 +9,6 @@ param(
 )
 
 $PessRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
-
 $ProjectRoot = Join-Path (Get-Location) $ProjectName
 
 function Create-Dir($path) {
@@ -33,7 +32,6 @@ $templatePath = Join-Path $PessRoot "templates\$ProjectType\CLAUDE.md"
 $targetPath = Join-Path $ProjectRoot "CLAUDE.md"
 if (Test-Path $templatePath) {
     Copy-Item $templatePath $targetPath
-    # 替换项目名占位符
     (Get-Content $targetPath) -replace '\[PROJECT_NAME\]', $ProjectName | Set-Content $targetPath
 } else {
     Write-Warning "模板 $templatePath 不存在，使用默认模板"
@@ -58,11 +56,13 @@ Write-File (Join-Path $ProjectRoot "AGENTS.md") @"
 - Pattern: TODO
 "@
 
-# 初始化 Memory Bank
+# 初始化 Memory Bank — 6 文件体系
+$timestamp = Get-Date -Format 'yyyy-MM-dd HH:mm'
+
 Write-File (Join-Path $ProjectRoot "memory-bank/activeContext.md") @"
 # 当前活跃上下文
 
-更新时间: $(Get-Date -Format 'yyyy-MM-dd HH:mm')
+更新时间: $timestamp
 
 ## 当前任务
 正在实现: 项目初始化
@@ -90,18 +90,55 @@ Write-File (Join-Path $ProjectRoot "memory-bank/session-notes.md") @"
 # 会话笔记（自动写入，无需手动维护）
 "@
 
-# 从个人 Skills 库复制通用 Skills
+Write-File (Join-Path $ProjectRoot "memory-bank/progress.md") @"
+# 项目进度
+
+更新时间: $timestamp
+
+## 已完成
+（每完成一个里程碑后记录）
+
+## 已知问题
+（待解决的技术债或 bug）
+
+## 下一里程碑
+（下一个目标）
+"@
+
+Write-File (Join-Path $ProjectRoot "memory-bank/constitution.md") @"
+# $ProjectName 项目宪法
+
+> 这是项目的最高规范。所有后续开发必须遵守以下原则。
+
+## 不可协商原则
+
+### 质量底线
+- 测试覆盖率: service 层 ≥ 85%，API 层 ≥ 70%
+- 禁止裸 except/catch，必须指定异常类型
+
+### 安全红线
+- 禁止在代码中硬编码 secret/token/key
+- 所有用户输入必须经过显式验证
+
+### 项目特定约束
+（待填写）
+"@
+
+# 复制 Skills（全部通用 + simulation 类型专用）
 $skillsSource = Join-Path $PessRoot "templates\skills"
 $skillsDest = Join-Path $ProjectRoot ".claude/skills"
 if (Test-Path $skillsSource) {
     Copy-Item "$skillsSource\security-patterns.md" $skillsDest -ErrorAction SilentlyContinue
-    Copy-Item "$skillsSource\testing-patterns.md" $skillsDest -ErrorAction SilentlyContinue
+    Copy-Item "$skillsSource\testing-patterns.md"  $skillsDest -ErrorAction SilentlyContinue
     if ($ProjectType -eq "simulation") {
-        Copy-Item "$skillsSource\simulation.md" $skillsDest -ErrorAction SilentlyContinue
+        Copy-Item "$skillsSource\simulation.md"    $skillsDest -ErrorAction SilentlyContinue
+    }
+    if ($ProjectType -eq "simulation") {
+        Copy-Item "$skillsSource\ato-agent.md"    $skillsDest -ErrorAction SilentlyContinue
     }
 }
 
-# 从个人 Commands 库复制通用 Commands
+# 复制 Commands
 $cmdsSource = Join-Path $PessRoot "templates\commands"
 $cmdsDest = Join-Path $ProjectRoot ".claude/commands"
 if (Test-Path $cmdsSource) {
@@ -124,10 +161,11 @@ dist/
 "@
 
 git add -A | Out-Null
-git commit -m "chore: init project with PESS v3.0" | Out-Null
+git commit -m "chore: init project with PESS v3.1" | Out-Null
 
-Write-Host "`n✅ 项目 '$ProjectName' 已初始化" -ForegroundColor Green
+Write-Host "`n项目 '$ProjectName' 已初始化 (PESS v3.1)" -ForegroundColor Green
 Write-Host "下一步：" -ForegroundColor Cyan
 Write-Host "  1. 填写 CLAUDE.md 的技术栈和目录约定" -ForegroundColor White
 Write-Host "  2. 填写 AGENTS.md 的 Build 命令" -ForegroundColor White
-Write-Host "  3. 用 /think 开始第一个功能" -ForegroundColor White
+Write-Host "  3. 填写 memory-bank/constitution.md" -ForegroundColor White
+Write-Host "  4. 用 /think 开始第一个功能" -ForegroundColor White

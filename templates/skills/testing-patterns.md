@@ -1,27 +1,42 @@
 ---
 name: testing-patterns
-description: "当创建或修改测试文件（test_*.py、*.test.ts、*.spec.ts）时自动加载。提供测试组织规范、Mock 策略和覆盖率要求。不适用于非测试文件。"
+description: "当编写或修改任何业务逻辑、API 端点、服务函数、工具函数或组件之前自动加载。提供 TDD 流程规范、测试策略和覆盖率要求。"
 ---
 
-## 测试规范
+## TDD 强制流程（RED → GREEN → REFACTOR）
 
-### 测试组织
+**铁律**: 在写任何实现代码之前，必须先写失败的测试。
+
+### 阶段 1: RED — 写一个失败的测试
+- 写一个描述预期行为的测试
+- 运行测试，确认失败（预期行为：测试不通过）
+- **禁止在此阶段写实现代码**
+
+### 阶段 2: GREEN — 写最少量代码通过测试
+- 写最少量实现代码
+- 运行测试，确认通过
+- **禁止添加任何无关代码**
+
+### 阶段 3: REFACTOR — 重构
+- 在测试通过的前提下重构代码
+- 每次重构后运行测试，确认仍然通过
+
+## 测试组织
 - 测试文件位置：tests/ 目录，镜像 src/ 结构
-- 命名：test_{module}.py 对应 src/{module}.py
-- 每个测试函数名必须描述被测场景：test_{function}_{scenario}_{expected}
+- 命名：`test_{module}_{scenario}_{expected}.py`
 
-### 测试分层策略
-- 单元测试：所有 service 层函数必须覆盖（Mock 外部依赖）
-- 集成测试：所有 API 端点必须覆盖（使用 TestClient/supertest）
-- 不要对 repository 层写大量 Mock，优先用 SQLite 内存数据库
+## 测试分层策略
+- **单元测试**: 所有 service 层函数（Mock 外部依赖）
+- **集成测试**: 所有 API 端点（使用 TestClient / supertest）
+- **E2E 测试**: 关键用户路径
 
-### Fixture 规范
-- 数据库 Fixture：tests/conftest.py 中定义，函数级 scope
-- 工厂：tests/factories/ 目录，使用 factory_boy 或 @factory 装饰器
-- 禁止在测试文件中硬编码测试数据，必须通过 Fixture
+## 覆盖率要求
+| 层次 | 最低覆盖率 |
+|------|-----------|
+| service 层 | ≥ 85% |
+| API 层 | ≥ 70% |
+| core 层 | ≥ 60% |
 
-### 覆盖率要求
-- service 层：≥85%
-- api 层：≥70%
-- core 层（基础设施）：≥60%
-- 运行：`pytest --cov=src --cov-report=term-missing`
+## Fixture 规范
+- 使用 conftest.py 定义共享 fixture
+- 测试数据必须通过 fixture 注入，禁止硬编码
