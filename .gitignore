@@ -1,1 +1,15 @@
-# PESS — no build artifacts by default
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+.idea/
+
+# Test artifacts
+tests/output/

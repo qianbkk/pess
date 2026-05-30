@@ -26,6 +26,9 @@ git clone https://github.com/qianbkk/pess.git D:\PersonalTools\pess
 # 进入目录
 cd D:\PersonalTools\pess
 
+# 安装全局组件（一次性）
+.\pess-install.ps1
+
 # 查看初始化脚本帮助
 Get-Help .\pess-init.ps1
 ```

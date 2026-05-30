@@ -1,27 +1,26 @@
 # AGENTS.md
 
 ## Build
-- Install: `pip install -e ".[dev]"` or `npm install`
-- Run: `uvicorn src.main:app --reload` or `npm run dev`
-- Test: `pytest tests/ -v` or `npm test`
-- Lint: `ruff check src/` or `npm run lint`
-- Type check: `mypy src/` or `npm run typecheck`
+- Install: `.\pess-install.ps1` (run once)
+- Use: `pess-init -ProjectName "my-project" -ProjectType "python-fastapi"`
+- Test: `.\tests\test-init.ps1` (see tests/ directory)
+- Lint: hooks scripts → `ruff check hooks/`
 
 ## Constraints
-- Test framework: pytest (Python) / vitest (JS) — do not switch
-- Formatter: ruff (Python) / prettier (JS) — do not reconfigure
-- Branch: never push directly to main
-- Dependencies: pin exact versions in requirements.txt / package-lock.json
-- Secrets: never hardcode; always use environment variables
+- Hook scripts must stay in `hooks/` (source); deployment is to user-level via pess-install.ps1
+- Template files must have no hardcoded absolute paths (use placeholders like [PROJECT_NAME])
+- Never auto-generate CLAUDE.md content with LLM (ETH Zurich arXiv:2602.11988)
+- Skill description fields are triggers, not documentation
 
 ## Architecture
-- Pattern: Router → Service → Repository → Database
-- Auth: JWT tokens, see src/core/auth.py
-- Error handling: custom exceptions in src/core/exceptions.py
-- Config: environment variables only, see src/core/config.py
+- Entry point: pess-init.ps1 (project scaffolding)
+- Install script: pess-install.ps1 (one-time global setup)
+- Templates: templates/ directory (read-only source of truth)
+- Hooks: hooks/ directory (source); deployed to %USERPROFILE%\.claude\hooks\ by installer
 
-## Testing
-- Unit tests required for all service-layer functions
-- Integration tests required for all API endpoints
-- Minimum coverage: 70% (enforced by CI)
-- Test data: use factories in tests/factories/, not hardcoded data
+## File Roles
+- hooks/*.py           → user-level security guards (NOT repo-level)
+- templates/global-CLAUDE.md → copied to ~/.claude/CLAUDE.md by installer
+- templates/commands/  → copied into .claude/commands/ by pess-init
+- templates/skills/    → copied into .claude/skills/ by pess-init
+- templates/*/CLAUDE.md → project-type-specific templates

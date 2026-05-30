@@ -8,6 +8,8 @@ param(
     [string]$Description = ""
 )
 
+$PessRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+
 $ProjectRoot = Join-Path (Get-Location) $ProjectName
 
 function Create-Dir($path) {
@@ -27,7 +29,7 @@ $dirs = @(
 foreach ($dir in $dirs) { Create-Dir (Join-Path $ProjectRoot $dir) }
 
 # 生成项目级 CLAUDE.md（从模板）
-$templatePath = "D:\PersonalTools\pess\templates\$ProjectType\CLAUDE.md"
+$templatePath = Join-Path $PessRoot "templates\$ProjectType\CLAUDE.md"
 $targetPath = Join-Path $ProjectRoot "CLAUDE.md"
 if (Test-Path $templatePath) {
     Copy-Item $templatePath $targetPath
@@ -89,15 +91,18 @@ Write-File (Join-Path $ProjectRoot "memory-bank/session-notes.md") @"
 "@
 
 # 从个人 Skills 库复制通用 Skills
-$skillsSource = "D:\PersonalTools\pess\templates\skills"
+$skillsSource = Join-Path $PessRoot "templates\skills"
 $skillsDest = Join-Path $ProjectRoot ".claude/skills"
 if (Test-Path $skillsSource) {
     Copy-Item "$skillsSource\security-patterns.md" $skillsDest -ErrorAction SilentlyContinue
     Copy-Item "$skillsSource\testing-patterns.md" $skillsDest -ErrorAction SilentlyContinue
+    if ($ProjectType -eq "simulation") {
+        Copy-Item "$skillsSource\simulation.md" $skillsDest -ErrorAction SilentlyContinue
+    }
 }
 
 # 从个人 Commands 库复制通用 Commands
-$cmdsSource = "D:\PersonalTools\pess\templates\commands"
+$cmdsSource = Join-Path $PessRoot "templates\commands"
 $cmdsDest = Join-Path $ProjectRoot ".claude/commands"
 if (Test-Path $cmdsSource) {
     Copy-Item "$cmdsSource\*.md" $cmdsDest -ErrorAction SilentlyContinue
