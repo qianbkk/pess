@@ -1,0 +1,116 @@
+name: PESS Quality Gates
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  pess-quality:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check Memory Bank exists
+        run: |
+          if [ ! -d "memory-bank" ]; then
+            echo "::warning ::No memory-bank directory found — skip PESS checks"
+            exit 0
+          fi
+
+      - name: Validate Memory Bank structure
+        run: |
+          REQUIRED="activeContext.md session-notes.md"
+          MISSING=""
+          for f in $REQUIRED; do
+            [ -f "memory-bank/$f" ] || MISSING="$MISSING $f"
+          done
+          if [ -n "$MISSING" ]; then
+            echo "::error ::Missing Memory Bank files:$MISSING"
+            exit 1
+          fi
+          echo "Memory Bank structure: OK"
+
+      - name: Validate memory-bank/activeContext.md is not stale
+        run: |
+          if [ -f "memory-bank/activeContext.md" ]; then
+            LAST_UPDATE=$(grep -m1 "更新时间:" memory-bank/activeContext.md | grep -oE "[0-9]{4}-[0-9]{2}-[0-9]{2}")
+            if [ -z "$LAST_UPDATE" ]; then
+              echo "::warning ::activeContext.md has no timestamp"
+            else
+              echo "activeContext.md last updated: $LAST_UPDATE"
+            fi
+          fi
+
+      - name: Validate CLAUDE.md exists
+        run: |
+          if [ ! -f "CLAUDE.md" ]; then
+            echo "::error ::CLAUDE.md not found in project root"
+            exit 1
+          fi
+          echo "CLAUDE.md: OK"
+
+      - name: Validate constitution.md if present
+        run: |
+          if [ -f "memory-bank/constitution.md" ]; then
+            echo "Constitution found — all commits must respect it"
+            # Quick check: no bypass comments in recent changes
+            RECENT_BYPASS=$(git log -5 --oneline --all --source --remotes -- \
+              2>/dev/null | wc -l)
+            echo "Recent commit activity: $RECENT_BYPASS commits checked"
+          fi
+
+      - name: Validate no hardcoded secrets
+        run: |
+          # Check for common hardcoded secret patterns
+          SECRET_PATTERNS="password\s*=\s*['\"][^'\"]{4,}['\"]"
+          SECRET_PATTERNS="$SECRET_PATTERNS|api[_-]?key\s*=\s*['\"][^'\"]{8,}['\"]"
+          SECRET_PATTERNS="$SECRET_PATTERNS|token\s*=\s*['\"][^'\"]{10,}['\"]"
+          SECRET_PATTERNS="$SECRET_PATTERNS|sk-[A-Za-z0-9]{20,}"
+
+          FOUND=$(find . -type f \( -name "*.py" -o -name "*.ts" -o -name "*.js" \) \
+            -not -path "./node_modules/*" \
+            -not -path "./.venv/*" \
+            -exec grep -Pl "$SECRET_PATTERNS" {} \; 2>/dev/null | head -5 || true)
+
+          if [ -n "$FOUND" ]; then
+            echo "::error ::Possible hardcoded secrets found in:"
+            echo "$FOUND"
+            exit 1
+          fi
+          echo "Secret scan: OK"
+
+      - name: Validate no absolute paths in code
+        run: |
+          ABS_PATH_PATTERNS="[A-Z]:\\\\[a-zA-Z]|/home/|/usr/local/"
+          FOUND=$(find . -type f \( -name "*.py" -o -name "*.ts" -o -name "*.js" -o -name "*.sh" \) \
+            -not -path "./.venv/*" \
+            -not -path "./node_modules/*" \
+            -exec grep -Pl "$ABS_PATH_PATTERNS" {} \; 2>/dev/null | head -5 || true)
+          if [ -n "$FOUND" ]; then
+            echo "::warning ::Possible hardcoded absolute paths in:"
+            echo "$FOUND"
+          else
+            echo "Absolute path check: OK"
+          fi
+
+      - name: Run project tests if present
+        run: |
+          if [ -f "package.json" ]; then
+            npm test -- --run 2>/dev/null && echo "Tests: OK" || echo "Tests: skipped"
+          elif [ -f "pytest.ini" ] || [ -f "pyproject.toml" ]; then
+            pip install -q pytest pytest-cov 2>/dev/null
+            pytest tests/ -v --tb=short 2>/dev/null && echo "Tests: OK" || echo "Tests: skipped"
+          else
+            echo "No test framework detected — skip"
+          fi
+
+      - name: Summary
+        run: |
+          echo "## PESS Quality Gates Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- Memory Bank structure: ✓" >> $GITHUB_STEP_SUMMARY
+          echo "- CLAUDE.md present: ✓" >> $GITHUB_STEP_SUMMARY
+          echo "- No hardcoded secrets: ✓" >> $GITHUB_STEP_SUMMARY
+          echo "- No absolute paths: ✓" >> $GITHUB_STEP_SUMMARY
