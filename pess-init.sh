@@ -30,7 +30,7 @@ if [ -z "$PROJECT_NAME" ]; then
     usage
 fi
 
-SCRIPT_DIR="$(cd "$(dirname "$0")"" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$PWD/$PROJECT_NAME"
 
 echo "Initializing PESS project: $PROJECT_NAME (type: $PROJECT_TYPE)"
