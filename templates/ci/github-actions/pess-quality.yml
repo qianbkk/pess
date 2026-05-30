@@ -36,7 +36,7 @@ jobs:
       - name: Validate memory-bank/activeContext.md is not stale
         run: |
           if [ -f "memory-bank/activeContext.md" ]; then
-            LAST_UPDATE=$(grep -m1 "更新时间:" memory-bank/activeContext.md | grep -oE "[0-9]{4}-[0-9]{2}-[0-9]{2}")
+            LAST_UPDATE=$(grep -oE "[0-9]{4}-[0-9]{2}-[0-9]{2}" memory-bank/activeContext.md | head -1)
             if [ -z "$LAST_UPDATE" ]; then
               echo "::warning ::activeContext.md has no timestamp"
             else

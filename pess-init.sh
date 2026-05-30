@@ -126,7 +126,7 @@ cat > "$PROJECT_ROOT/memory-bank/progress.md" << EOF
 EOF
 
 cat > "$PROJECT_ROOT/memory-bank/constitution.md" << EOF
-# [PROJECT_NAME] 项目宪法
+# $PROJECT_NAME 项目宪法
 
 > 这是项目的最高规范。所有后续开发必须遵守以下原则。
 
@@ -144,13 +144,13 @@ cat > "$PROJECT_ROOT/memory-bank/constitution.md" << EOF
 （待填写）
 EOF
 
-# Copy skills
-SKILLS_SRC="$SCRIPT_DIR/templates/skills"
-SKILLS_DEST="$PROJECT_ROOT/.claude/skills"
-[ -d "$SKILLS_SRC" ] && cp "$SKILLS_SRC"/*.md "$SKILLS_DEST/" 2>/dev/null || true
-# simulation type adds simulation skill
+# Copy skills (generic only)
+cp "$SKILLS_SRC/security-patterns.md" "$SKILLS_DEST/" 2>/dev/null || true
+cp "$SKILLS_SRC/testing-patterns.md" "$SKILLS_DEST/" 2>/dev/null || true
+
+# Type-specific skill
 if [ "$PROJECT_TYPE" = "simulation" ]; then
-    [ -f "$SKILLS_SRC/simulation.md" ] && cp "$SKILLS_SRC/simulation.md" "$SKILLS_DEST/"
+    cp "$SKILLS_SRC/simulation.md" "$SKILLS_DEST/" 2>/dev/null || true
 fi
 
 # Copy commands
@@ -173,7 +173,7 @@ dist/
 .DS_Store
 EOF
 git add -A
-git commit -m "chore: init project with PESS v3.1"
+git commit -m "chore: init project with PESS v3.2"
 
 echo ""
 echo "Project '$PROJECT_NAME' initialized successfully."

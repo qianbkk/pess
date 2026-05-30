@@ -131,10 +131,7 @@ if (Test-Path $skillsSource) {
     Copy-Item "$skillsSource\security-patterns.md" $skillsDest -ErrorAction SilentlyContinue
     Copy-Item "$skillsSource\testing-patterns.md"  $skillsDest -ErrorAction SilentlyContinue
     if ($ProjectType -eq "simulation") {
-        Copy-Item "$skillsSource\simulation.md"    $skillsDest -ErrorAction SilentlyContinue
-    }
-    if ($ProjectType -eq "simulation") {
-        Copy-Item "$skillsSource\ato-agent.md"    $skillsDest -ErrorAction SilentlyContinue
+        Copy-Item "$skillsSource\simulation.md" $skillsDest -ErrorAction SilentlyContinue
     }
 }
 

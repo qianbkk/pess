@@ -1,6 +1,6 @@
 ---
 name: testing-patterns
-description: "当编写或修改任何业务逻辑、API 端点、服务函数、工具函数或组件之前自动加载。提供 TDD 流程规范、测试策略和覆盖率要求。"
+description: "当创建或修改测试文件（test_*.py、*.test.ts、*.spec.ts、conftest.py）时自动加载。提供 TDD 流程规范、测试策略和覆盖率要求。不适用于非测试文件。"
 ---
 
 ## TDD 强制流程（RED → GREEN → REFACTOR）

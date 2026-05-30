@@ -5,7 +5,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-CURRENT_VERSION="3.1.0"
+CURRENT_VERSION="3.2.0"
 UPDATE_BASE="https://github.com/qianbkk/pess.git"
 
 usage() {
@@ -23,8 +23,6 @@ echo "PESS Updater v$CURRENT_VERSION"
 
 if [ "$CHECK_ONLY" = true ]; then
     echo "Checking for updates..."
-    # In a full implementation, this would fetch the latest tag from GitHub
-    # For now, compare with local version
     LATEST_TAG=$(git -C "$SCRIPT_DIR" describe --tags 2>/dev/null | sed 's/v//' || echo "$CURRENT_VERSION")
     if [ "$LATEST_TAG" = "$CURRENT_VERSION" ]; then
         echo "You are on the latest version: v$CURRENT_VERSION"
@@ -36,36 +34,40 @@ fi
 
 echo "Fetching latest version from GitHub..."
 
-# Save current hook signatures (don't overwrite user modifications)
+# Preserve existing user hooks
 LOCAL_HOOKS=""
 if [ -d "$HOME/.claude/hooks" ]; then
     LOCAL_HOOKS="$HOME/.claude/hooks"
     echo "Preserving existing hooks in $LOCAL_HOOKS"
 fi
 
-# Pull latest changes into a local tracking branch
+# Add upstream remote and fetch
 git remote add pess-upstream "$UPDATE_BASE" 2>/dev/null || \
     git remote set-url pess-upstream "$UPDATE_BASE"
 
 echo "Pulling PESS updates..."
 git fetch pess-upstream main --tags
 
-# Files that should NOT be overwritten (user customizations)
-PROTECTED_FILES="CLAUDE.md"
-PROTECTED_DIRS="memory-bank"
+# Update templates and scripts (never overwrite user customizations)
+echo "Updating templates and scripts..."
+
+for path in templates/ hooks/ pess-install.sh pess-init.sh pess-update.sh AGENTS.md CHANGELOG.md .gitignore; do
+    git checkout "pess-upstream/main" -- "$path" 2>/dev/null || true
+done
 
 echo ""
 echo "PESS has been updated to the latest version."
 echo ""
 echo "Files that were NOT overwritten (your customizations preserved):"
-for f in $PROTECTED_FILES; do
-    echo "  - $f"
-done
+echo "  - CLAUDE.md"
+echo "  - memory-bank/"
 echo ""
 
-# Report what changed
-LATEST_TAG=$(git -C "$SCRIPT_DIR" describe --tags --abbrev=0 2>/dev/null || echo "$CURRENT_VERSION")
+LATEST_TAG=$(git -C "$SCRIPT_DIR" describe --tags --abbrev=0 2>/dev/null | sed 's/v//' || echo "$CURRENT_VERSION")
 echo "Current version: v$CURRENT_VERSION"
 echo "Latest version: v$LATEST_TAG"
-echo ""
-echo "To see changes: git -C \"$SCRIPT_DIR\" log --oneline v$CURRENT_VERSION..v$LATEST_TAG"
+
+if [ "$LATEST_TAG" != "$CURRENT_VERSION" ]; then
+    echo "What's new:"
+    git -C "$SCRIPT_DIR" log --oneline "v$CURRENT_VERSION".."v$LATEST_TAG" 2>/dev/null || true
+fi
