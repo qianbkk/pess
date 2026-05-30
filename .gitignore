@@ -1,3 +1,6 @@
+# Claude Code local state (do not commit)
+.omc/
+
 # Python
 __pycache__/
 *.pyc
