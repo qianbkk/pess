@@ -175,7 +175,7 @@ git add -A
 git commit -m "chore: init project with PESS v$PessVersion"
 
 Write-Host ""
-Write-Host "Project '$ProjectName' initialized (PESS v3.3)" -ForegroundColor Green
+Write-Host "Project '$ProjectName' initialized (PESS v$PessVersion)" -ForegroundColor Green
 Write-Host "Next steps:" -ForegroundColor Cyan
 Write-Host "  1. Fill CLAUDE.md (tech stack and conventions)" -ForegroundColor White
 Write-Host "  2. Fill AGENTS.md Build commands" -ForegroundColor White
