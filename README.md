@@ -4,7 +4,7 @@
 [![Version](https://img.shields.io/badge/Version-3.3.1-00D084.svg)](https://github.com/qianbkk/pess)
 [![Claude Code](https://img.shields.io/badge/AI-Claude%20Code-7B42F5?logo=anthropic)](https://claude.ai/code)
 
-**版本：** 3.1
+**版本：** 3.3.1
 **基准日期：** 2026-05-31
 **适用工具：** Claude Code（主力）/ Cursor / GitHub Copilot
 **设计目标：** 让个人开发者在 vibe coding 复杂项目时获得可持续的质量保障
