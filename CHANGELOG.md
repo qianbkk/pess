@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## v3.3.1 (2026-05-31)
+
+### 修复
+- `pess-update.ps1`: 版本检测改用 GitHub API，不再依赖本地 git 仓库（ZIP 安装用户也能正常使用）
+- CI workflow: 测试框架动态检测（Vitest/Jest/Mocha/npm/Cargo/Go），失败时 exit 1 真正阻断
+
+---
+
 ## v3.3.0 (2026-05-31)
 
 ### 修复

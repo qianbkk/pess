@@ -96,16 +96,59 @@ jobs:
             echo "Absolute path check: OK"
           fi
 
-      - name: Run project tests if present
+      - name: Detect test framework
+        id: detect-framework
         run: |
           if [ -f "package.json" ]; then
-            npm test -- --run 2>/dev/null && echo "Tests: OK" || echo "Tests: skipped"
-          elif [ -f "pytest.ini" ] || [ -f "pyproject.toml" ]; then
-            pip install -q pytest pytest-cov 2>/dev/null
-            pytest tests/ -v --tb=short 2>/dev/null && echo "Tests: OK" || echo "Tests: skipped"
+            if grep -q '"test".*"vitest\|"test".*"vitest' package.json; then
+              echo "framework=vitest" >> $GITHUB_OUTPUT
+            elif grep -q '"test".*"jest\|"test".*"jest' package.json; then
+              echo "framework=jest" >> $GITHUB_OUTPUT
+            elif grep -q '"test".*"mocha\|"test".*"mocha' package.json; then
+              echo "framework=mocha" >> $GITHUB_OUTPUT
+            else
+              echo "framework=npm-test" >> $GITHUB_OUTPUT
+            fi
+          elif [ -f "pytest.ini" ] || [ -f "pyproject.toml" ] || [ -f "setup.py" ]; then
+            echo "framework=pytest" >> $GITHUB_OUTPUT
+          elif [ -f "Cargo.toml" ]; then
+            echo "framework=cargo" >> $GITHUB_OUTPUT
+          elif [ -f "go.mod" ]; then
+            echo "framework=go" >> $GITHUB_OUTPUT
           else
-            echo "No test framework detected — skip"
+            echo "framework=none" >> $GITHUB_OUTPUT
           fi
+          echo "Detected: ${{ steps.detect-framework.outputs.framework }}"
+
+      - name: Run tests (Vitest)
+        if: steps.detect-framework.outputs.framework == 'vitest'
+        run: npm test -- --run || exit 1
+
+      - name: Run tests (Jest)
+        if: steps.detect-framework.outputs.framework == 'jest'
+        run: npm test || exit 1
+
+      - name: Run tests (Mocha)
+        if: steps.detect-framework.outputs.framework == 'mocha'
+        run: npm test || exit 1
+
+      - name: Run tests (npm test)
+        if: steps.detect-framework.outputs.framework == 'npm-test'
+        run: npm test || exit 1
+
+      - name: Run tests (pytest)
+        if: steps.detect-framework.outputs.framework == 'pytest'
+        run: |
+          pip install -q pytest pytest-cov
+          pytest tests/ test/ -v --tb=short || exit 1
+
+      - name: Run tests (Cargo)
+        if: steps.detect-framework.outputs.framework == 'cargo'
+        run: cargo test || exit 1
+
+      - name: Run tests (Go)
+        if: steps.detect-framework.outputs.framework == 'go'
+        run: go test ./... || exit 1
 
       - name: Summary
         run: |

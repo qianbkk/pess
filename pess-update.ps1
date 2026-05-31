@@ -5,19 +5,25 @@ param(
     [switch]$CheckOnly
 )
 
-$CURRENT_VERSION = "3.2.0"
+$CURRENT_VERSION = "3.3.0"
 $UPDATE_BASE = "https://github.com/qianbkk/pess.git"
+$API_URL = "https://api.github.com/repos/qianbkk/pess/releases/latest"
 
 Write-Host "PESS Updater v$CURRENT_VERSION" -ForegroundColor Cyan
 
+function Get-LatestTag {
+    try {
+        $response = Invoke-RestMethod $API_URL -Headers @{Accept="application/vnd.github+json"} -TimeoutSec 10
+        return $response.tag_name -replace 'v', ''
+    } catch {
+        return $null
+    }
+}
+
 if ($CheckOnly) {
     Write-Host "Checking for updates..."
-    try {
-        $latestTag = git describe --tags 2>$null | ForEach-Object { $_ -replace 'v', '' }
-        if ($null -eq $latestTag) { $latestTag = $CURRENT_VERSION }
-    } catch {
-        $latestTag = $CURRENT_VERSION
-    }
+    $latestTag = Get-LatestTag
+    if ($null -eq $latestTag) { $latestTag = $CURRENT_VERSION }
     if ($latestTag -eq $CURRENT_VERSION) {
         Write-Host "You are on the latest version: v$CURRENT_VERSION" -ForegroundColor Green
     } else {
@@ -60,14 +66,13 @@ foreach ($f in $protected) {
 }
 Write-Host ""
 
-$latestTag = git describe --tags --abbrev=0 2>$null -replace 'v', ''
+$latestTag = (Get-LatestTag) -replace 'v', ''
 if ($null -eq $latestTag) { $latestTag = $CURRENT_VERSION }
 Write-Host "Current version: v$CURRENT_VERSION"
 Write-Host "Latest version: v$latestTag"
 
 if ($latestTag -ne $CURRENT_VERSION) {
     Write-Host "What's new:" -ForegroundColor Cyan
-    git -C "$PWD" log --oneline "v$CURRENT_VERSION".."v$latestTag" 2>$null | ForEach-Object {
-        Write-Host "  $_"
-    }
+    Write-Host "  Visit https://github.com/qianbkk/pess/releases/v$latestTag" -ForegroundColor White
+    Write-Host "  Or run: git fetch origin && git checkout v$latestTag" -ForegroundColor White
 }
