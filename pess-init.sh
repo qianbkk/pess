@@ -50,7 +50,6 @@ TARGET_PATH="$PROJECT_ROOT/CLAUDE.md"
 
 if [ -f "$TEMPLATE_PATH" ]; then
     cp "$TEMPLATE_PATH" "$TARGET_PATH"
-    # Replace [PROJECT_NAME] placeholder
     sed -i "s/\[PROJECT_NAME\]/$PROJECT_NAME/g" "$TARGET_PATH"
     echo "CLAUDE.md generated from template"
 else
@@ -93,7 +92,8 @@ cat > "$PROJECT_ROOT/memory-bank/activeContext.md" << EOF
 ## 下一步
 - [ ] 填写 CLAUDE.md 的技术栈和目录约定
 - [ ] 填写 AGENTS.md 的 Build 命令
-- [ ] 写第一个功能的 FEATURE_SPEC.md
+- [ ] 填写 memory-bank/techContext.md 的技术栈信息
+- [ ] 用 /think 开始第一个功能
 EOF
 
 cat > "$PROJECT_ROOT/memory-bank/systemPatterns.md" << EOF
@@ -116,13 +116,37 @@ cat > "$PROJECT_ROOT/memory-bank/progress.md" << EOF
 更新时间: $TIMESTAMP
 
 ## 已完成
-（每完成一个里程碑后记录）
+- [x] 项目初始化
 
 ## 已知问题
 （待解决的技术债或 bug）
 
 ## 下一里程碑
-（下一个目标）
+（待填写）
+EOF
+
+cat > "$PROJECT_ROOT/memory-bank/techContext.md" << EOF
+# 技术上下文
+
+更新时间: $TIMESTAMP
+
+## 技术栈
+- 语言：（待填写，例：Python 3.12）
+- 框架：（待填写，例：FastAPI 0.110）
+- 数据库：（待填写）
+- 测试工具：（待填写，例：pytest）
+- 包管理：（待填写，例：uv）
+
+## 关键依赖
+（待填写）
+
+## 开发环境
+- 运行命令：（待填写）
+- 测试命令：（待填写）
+- Lint 命令：（待填写）
+
+## 已知约束
+（待填写，例：Python 3.10 兼容性要求）
 EOF
 
 cat > "$PROJECT_ROOT/memory-bank/constitution.md" << EOF
@@ -145,10 +169,11 @@ cat > "$PROJECT_ROOT/memory-bank/constitution.md" << EOF
 EOF
 
 # Copy skills (generic only)
+SKILLS_SRC="$SCRIPT_DIR/templates/skills"
+SKILLS_DEST="$PROJECT_ROOT/.claude/skills"
 cp "$SKILLS_SRC/security-patterns.md" "$SKILLS_DEST/" 2>/dev/null || true
 cp "$SKILLS_SRC/testing-patterns.md" "$SKILLS_DEST/" 2>/dev/null || true
 
-# Type-specific skill
 if [ "$PROJECT_TYPE" = "simulation" ]; then
     cp "$SKILLS_SRC/simulation.md" "$SKILLS_DEST/" 2>/dev/null || true
 fi
@@ -173,11 +198,13 @@ dist/
 .DS_Store
 EOF
 git add -A
-git commit -m "chore: init project with PESS v3.2"
+git commit -m "chore: init project with PESS v3.3"
 
 echo ""
 echo "Project '$PROJECT_NAME' initialized successfully."
 echo "Next steps:"
 echo "  1. Fill in CLAUDE.md (tech stack and conventions)"
 echo "  2. Fill in AGENTS.md Build commands"
-echo "  3. Use /think to start your first feature"
+echo "  3. Fill in memory-bank/techContext.md"
+echo "  4. Fill in memory-bank/constitution.md"
+echo "  5. Use /think to start your first feature"

@@ -12,33 +12,58 @@ Copy-Item "$PessRoot\hooks\guard_files.py"    $HooksDir -Force
 Copy-Item "$PessRoot\hooks\guard_commands.py" $HooksDir -Force
 Write-Host "Hooks 已安装到 $HooksDir" -ForegroundColor Green
 
-# 3. 写入 settings.json（如已存在则合并，不覆盖）
+# 3. 写入或合并 settings.json
 $settingsPath = "$ClaudeDir\settings.json"
-$newHooks = @{
-    hooks = @{
-        PreToolUse = @(
-            @{
-                matcher = "Write|Edit|MultiEdit"
-                hooks   = @(
-                    @{ type = "command"; command = "python `"$HooksDir\guard_files.py`"" }
-                )
-            },
-            @{
-                matcher = "Bash"
-                hooks   = @(
-                    @{ type = "command"; command = "python `"$HooksDir\guard_commands.py`"" }
-                )
-            }
-        )
-    }
-}
+
+$newHooksWrite = @{ type = "command"; command = "python `"$HooksDir\guard_files.py`"" }
+$newHooksBash  = @{ type = "command"; command = "python `"$HooksDir\guard_commands.py`"" }
 
 if (Test-Path $settingsPath) {
-    Write-Warning "$settingsPath 已存在，请手动合并 hooks 配置："
-    $newHooks | ConvertTo-Json -Depth 10 | Write-Host
+    # 合并到现有 settings.json，不覆盖已有内容
+    $existing = Get-Content $settingsPath -Raw | ConvertFrom-Json
+
+    if (-not $existing.hooks) {
+        $existing | Add-Member -NotePropertyName "hooks" -NotePropertyValue @{} -Force
+    }
+    if (-not $existing.hooks.PreToolUse) {
+        $existing.hooks | Add-Member -NotePropertyName "PreToolUse" -NotePropertyValue @() -Force
+    }
+
+    # 检查 guard_files 是否已注册（避免重复）
+    $alreadyHasFiles = $existing.hooks.PreToolUse | Where-Object {
+        $_.hooks.command -like "*guard_files*"
+    }
+    if (-not $alreadyHasFiles) {
+        $existing.hooks.PreToolUse += @{
+            matcher = "Write|Edit|MultiEdit"
+            hooks   = @($newHooksWrite)
+        }
+    }
+
+    # 检查 guard_commands 是否已注册（避免重复）
+    $alreadyHasBash = $existing.hooks.PreToolUse | Where-Object {
+        $_.hooks.command -like "*guard_commands*"
+    }
+    if (-not $alreadyHasBash) {
+        $existing.hooks.PreToolUse += @{
+            matcher = "Bash"
+            hooks   = @($newHooksBash)
+        }
+    }
+
+    $existing | ConvertTo-Json -Depth 10 | Set-Content $settingsPath -Encoding UTF8
+    Write-Host "Hooks 已合并到现有 settings.json" -ForegroundColor Green
 } else {
-    $newHooks | ConvertTo-Json -Depth 10 | Set-Content $settingsPath -Encoding UTF8
-    Write-Host "settings.json 已写入" -ForegroundColor Green
+    # 全新安装
+    @{
+        hooks = @{
+            PreToolUse = @(
+                @{ matcher = "Write|Edit|MultiEdit"; hooks = @($newHooksWrite) },
+                @{ matcher = "Bash";                 hooks = @($newHooksBash) }
+            )
+        }
+    } | ConvertTo-Json -Depth 10 | Set-Content $settingsPath -Encoding UTF8
+    Write-Host "settings.json 已创建" -ForegroundColor Green
 }
 
 # 4. 复制全局 CLAUDE.md（如已存在则跳过，不覆盖用户的定制）

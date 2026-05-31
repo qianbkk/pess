@@ -73,7 +73,8 @@ Write-File (Join-Path $ProjectRoot "memory-bank/activeContext.md") @"
 ## 下一步
 - [ ] 填写 CLAUDE.md 的技术栈和目录约定
 - [ ] 填写 AGENTS.md 的 Build 命令
-- [ ] 写第一个功能的 FEATURE_SPEC.md
+- [ ] 填写 memory-bank/techContext.md 的技术栈信息
+- [ ] 用 /think 开始第一个功能
 "@
 
 Write-File (Join-Path $ProjectRoot "memory-bank/systemPatterns.md") @"
@@ -96,13 +97,37 @@ Write-File (Join-Path $ProjectRoot "memory-bank/progress.md") @"
 更新时间: $timestamp
 
 ## 已完成
-（每完成一个里程碑后记录）
+- [x] 项目初始化
 
 ## 已知问题
 （待解决的技术债或 bug）
 
 ## 下一里程碑
-（下一个目标）
+（待填写）
+"@
+
+Write-File (Join-Path $ProjectRoot "memory-bank/techContext.md") @"
+# 技术上下文
+
+更新时间: $timestamp
+
+## 技术栈
+- 语言：（待填写，例：Python 3.12）
+- 框架：（待填写，例：FastAPI 0.110）
+- 数据库：（待填写）
+- 测试工具：（待填写，例：pytest）
+- 包管理：（待填写，例：uv）
+
+## 关键依赖
+（待填写）
+
+## 开发环境
+- 运行命令：（待填写）
+- 测试命令：（待填写）
+- Lint 命令：（待填写）
+
+## 已知约束
+（待填写，例：Python 3.10 兼容性要求）
 "@
 
 Write-File (Join-Path $ProjectRoot "memory-bank/constitution.md") @"
@@ -124,7 +149,7 @@ Write-File (Join-Path $ProjectRoot "memory-bank/constitution.md") @"
 （待填写）
 "@
 
-# 复制 Skills（全部通用 + simulation 类型专用）
+# 复制 Skills（通用 + simulation 类型专用）
 $skillsSource = Join-Path $PessRoot "templates\skills"
 $skillsDest = Join-Path $ProjectRoot ".claude/skills"
 if (Test-Path $skillsSource) {
@@ -158,11 +183,12 @@ dist/
 "@
 
 git add -A | Out-Null
-git commit -m "chore: init project with PESS v3.1" | Out-Null
+git commit -m "chore: init project with PESS v3.3" | Out-Null
 
-Write-Host "`n项目 '$ProjectName' 已初始化 (PESS v3.1)" -ForegroundColor Green
+Write-Host "`n项目 '$ProjectName' 已初始化 (PESS v3.3)" -ForegroundColor Green
 Write-Host "下一步：" -ForegroundColor Cyan
 Write-Host "  1. 填写 CLAUDE.md 的技术栈和目录约定" -ForegroundColor White
 Write-Host "  2. 填写 AGENTS.md 的 Build 命令" -ForegroundColor White
-Write-Host "  3. 填写 memory-bank/constitution.md" -ForegroundColor White
-Write-Host "  4. 用 /think 开始第一个功能" -ForegroundColor White
+Write-Host "  3. 填写 memory-bank/techContext.md" -ForegroundColor White
+Write-Host "  4. 填写 memory-bank/constitution.md" -ForegroundColor White
+Write-Host "  5. 用 /think 开始第一个功能" -ForegroundColor White
