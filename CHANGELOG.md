@@ -9,6 +9,10 @@
 - `pess-init.ps1`: 输出消息 `PESS v3.3` → `PESS v$PessVersion` 动态版本
 - README.md: badge 和正文版本号 3.1 → 3.3.1
 
+### 增强
+- `CLAUDE.md`: 从 638B 扩展到完整系统文档（Commands/Skills/Memory Bank/Hooks 完整表格 + 快速参考）
+- `pess-init.ps1` / `pess-init.sh` 初始化测试通过（21 项全部 PASS）
+
 ---
 
 ## v3.3.1 (2026-05-31)
