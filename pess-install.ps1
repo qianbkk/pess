@@ -12,7 +12,23 @@ Copy-Item "$PessRoot\hooks\guard_files.py"    $HooksDir -Force
 Copy-Item "$PessRoot\hooks\guard_commands.py" $HooksDir -Force
 Write-Host "Hooks 已安装到 $HooksDir" -ForegroundColor Green
 
-# 3. 写入或合并 settings.json
+# 3. 验证 Python 可用性
+$pythonOk = $false
+foreach ($cmd in @("python", "python3", "py")) {
+    try {
+        $ver = & $cmd --version 2>&1
+        if ($ver -match "Python 3\.[89]|3\.1[0-9]|Python 3\.1[2-9]") {
+            Write-Host "Python 检测: $ver ✅" -ForegroundColor Green
+            $pythonOk = $true
+            break
+        }
+    } catch {}
+}
+if (-not $pythonOk) {
+    Write-Warning "未检测到 Python 3.8+。hooks 已安装但可能无法运行，请确保 Python 3.8+ 在 PATH 中。"
+}
+
+# 4. 写入或合并 settings.json
 $settingsPath = "$ClaudeDir\settings.json"
 
 $newHooksWrite = @{ type = "command"; command = "python `"$HooksDir\guard_files.py`"" }
@@ -30,24 +46,46 @@ if (Test-Path $settingsPath) {
     }
 
     # 检查 guard_files 是否已注册（避免重复）
-    $alreadyHasFiles = $existing.hooks.PreToolUse | Where-Object {
-        $_.hooks.command -like "*guard_files*"
+    $alreadyHasFiles = $false
+    if ($existing.hooks -and $existing.hooks.PreToolUse) {
+        foreach ($entry in $existing.hooks.PreToolUse) {
+            if ($entry.hooks -and ($entry.hooks | Where-Object { $_.command -like "*guard_files*" })) {
+                $alreadyHasFiles = $true
+                break
+            }
+        }
     }
     if (-not $alreadyHasFiles) {
-        $existing.hooks.PreToolUse += @{
+        $entry = @{
             matcher = "Write|Edit|MultiEdit"
             hooks   = @($newHooksWrite)
+        }
+        if ($existing.hooks.PreToolUse -is [array]) {
+            $existing.hooks.PreToolUse += @($entry)
+        } else {
+            $existing.hooks.PreToolUse = @($entry)
         }
     }
 
     # 检查 guard_commands 是否已注册（避免重复）
-    $alreadyHasBash = $existing.hooks.PreToolUse | Where-Object {
-        $_.hooks.command -like "*guard_commands*"
+    $alreadyHasBash = $false
+    if ($existing.hooks -and $existing.hooks.PreToolUse) {
+        foreach ($entry in $existing.hooks.PreToolUse) {
+            if ($entry.hooks -and ($entry.hooks | Where-Object { $_.command -like "*guard_commands*" })) {
+                $alreadyHasBash = $true
+                break
+            }
+        }
     }
     if (-not $alreadyHasBash) {
-        $existing.hooks.PreToolUse += @{
+        $entry = @{
             matcher = "Bash"
             hooks   = @($newHooksBash)
+        }
+        if ($existing.hooks.PreToolUse -is [array]) {
+            $existing.hooks.PreToolUse += @($entry)
+        } else {
+            $existing.hooks.PreToolUse = @($entry)
         }
     }
 
@@ -66,7 +104,7 @@ if (Test-Path $settingsPath) {
     Write-Host "settings.json 已创建" -ForegroundColor Green
 }
 
-# 4. 复制全局 CLAUDE.md（如已存在则跳过，不覆盖用户的定制）
+# 5. 复制全局 CLAUDE.md（如已存在则跳过，不覆盖用户的定制）
 $globalTarget = "$ClaudeDir\CLAUDE.md"
 if (-not (Test-Path $globalTarget)) {
     Copy-Item "$PessRoot\templates\global-CLAUDE.md" $globalTarget

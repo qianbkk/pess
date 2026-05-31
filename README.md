@@ -1,7 +1,7 @@
 # PESS v3.1 — 个人AI编程工程规范系统
 
 [![MIT License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-3.1-00D084.svg)](https://github.com/qianbkk/pess)
+[![Version](https://img.shields.io/badge/Version-3.3.1-00D084.svg)](https://github.com/qianbkk/pess)
 [![Claude Code](https://img.shields.io/badge/AI-Claude%20Code-7B42F5?logo=anthropic)](https://claude.ai/code)
 
 **版本：** 3.1

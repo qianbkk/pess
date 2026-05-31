@@ -8,6 +8,7 @@ param(
     [string]$Description = ""
 )
 
+$PessVersion = "3.3.1"
 $PessRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ProjectRoot = Join-Path (Get-Location) $ProjectName
 
@@ -171,7 +172,7 @@ dist/
 Set-Content -Path ".gitignore" -Value $gitignore -Encoding UTF8
 
 git add -A
-git commit -m "chore: init project with PESS v3.3"
+git commit -m "chore: init project with PESS v$PessVersion"
 
 Write-Host ""
 Write-Host "Project '$ProjectName' initialized (PESS v3.3)" -ForegroundColor Green
