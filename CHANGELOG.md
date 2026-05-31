@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## v3.3.2 (2026-05-31)
+
+### 修复
+- `pess-install.ps1`: settings.json 合并逻辑 P0 Bug 修复 — 原来 `$alreadyHasFiles` 使用 `Where-Object` 返回数组而非布尔值，导致对已有 settings.json 用户 hooks 完全失效；现改用 foreach 迭代正确检测
+- `pess-install.ps1`: 新增 Python 3.8+ 可用性检测，hooks 运行前置保障
+- `pess-init.ps1` / `pess-init.sh`: 硬编码版本号 v3.0/v3.3 → 动态变量 `$PessVersion` / `PESS_VERSION`
+- `pess-init.ps1`: 输出消息 `PESS v3.3` → `PESS v$PessVersion` 动态版本
+- README.md: badge 和正文版本号 3.1 → 3.3.1
+
+---
+
 ## v3.3.1 (2026-05-31)
 
 ### 修复
