@@ -30,6 +30,8 @@ if [ -z "$PROJECT_NAME" ]; then
     usage
 fi
 
+PESS_VERSION="3.3.1"
+
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$PWD/$PROJECT_NAME"
 
@@ -198,7 +200,7 @@ dist/
 .DS_Store
 EOF
 git add -A
-git commit -m "chore: init project with PESS v3.3"
+git commit -m "chore: init project with PESS v$PESS_VERSION"
 
 echo ""
 echo "Project '$PROJECT_NAME' initialized successfully."
