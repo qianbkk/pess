@@ -19,27 +19,23 @@ function Write-File($path, $content) {
     $content | Set-Content -Path $path -Encoding UTF8
 }
 
-# 创建目录结构
-$dirs = @(
-    ".claude/commands", ".claude/skills",
-    "memory-bank", "docs/spec", "docs/adr",
-    "src", "tests"
-)
+$dirs = @(".claude/commands", ".claude/skills", "memory-bank", "docs/spec", "docs/adr", "src", "tests")
 foreach ($dir in $dirs) { Create-Dir (Join-Path $ProjectRoot $dir) }
 
-# 生成项目级 CLAUDE.md（从模板）
 $templatePath = Join-Path $PessRoot "templates\$ProjectType\CLAUDE.md"
 $targetPath = Join-Path $ProjectRoot "CLAUDE.md"
 if (Test-Path $templatePath) {
     Copy-Item $templatePath $targetPath
-    (Get-Content $targetPath) -replace '\[PROJECT_NAME\]', $ProjectName | Set-Content $targetPath
+    $content = Get-Content $targetPath -Raw
+    $content -replace '\[PROJECT_NAME\]', $ProjectName | Set-Content $targetPath -NoNewline
 } else {
-    Write-Warning "模板 $templatePath 不存在，使用默认模板"
-    Write-File $targetPath "# $ProjectName 专属规范`n`n## 技术栈（待填写）`n`n## 目录约定（待填写）`n"
+    Write-Warning "Template $templatePath not found"
+    $content = "# $ProjectName`n`n## Tech Stack (to fill)`n`n## Conventions (to fill)`n"
+    Set-Content -Path $targetPath -Value $content -Encoding UTF8
 }
 
-# 生成 AGENTS.md
-Write-File (Join-Path $ProjectRoot "AGENTS.md") @"
+$agentsPath = Join-Path $ProjectRoot "AGENTS.md"
+Set-Content -Path $agentsPath -Value @"
 # AGENTS.md
 
 ## Build
@@ -54,123 +50,114 @@ Write-File (Join-Path $ProjectRoot "AGENTS.md") @"
 
 ## Architecture
 - Pattern: TODO
+"@ -Encoding UTF8
+
+$ts = Get-Date -Format 'yyyy-MM-dd HH:mm'
+
+$activeCtx = @"
+# Active Context
+
+Updated: $ts
+
+## Current Task
+Implementing: Project initialization
+
+## Done
+- [x] Project structure created
+
+## Next
+- [ ] Fill CLAUDE.md (tech stack and conventions)
+- [ ] Fill AGENTS.md Build commands
+- [ ] Fill memory-bank/techContext.md
+- [ ] Use /think to start first feature
 "@
+Set-Content -Path (Join-Path $ProjectRoot "memory-bank\activeContext.md") -Value $activeCtx -Encoding UTF8
 
-# 初始化 Memory Bank — 6 文件体系
-$timestamp = Get-Date -Format 'yyyy-MM-dd HH:mm'
+Set-Content -Path (Join-Path $ProjectRoot "memory-bank\systemPatterns.md") -Value "# System Patterns`n(TODO)`n" -Encoding UTF8
+Set-Content -Path (Join-Path $ProjectRoot "memory-bank\lessons.md") -Value "# Lessons Learned`n(Empty until you record a real mistake via /wrap)`n" -Encoding UTF8
+Set-Content -Path (Join-Path $ProjectRoot "memory-bank\session-notes.md") -Value "# Session Notes`n(Auto-written by /wrap, no manual maintenance needed)`n" -Encoding UTF8
 
-Write-File (Join-Path $ProjectRoot "memory-bank/activeContext.md") @"
-# 当前活跃上下文
+$progress = @"
+# Progress
 
-更新时间: $timestamp
+Updated: $ts
 
-## 当前任务
-正在实现: 项目初始化
+## Completed
+- [x] Project initialization
 
-## 刚完成
-- [x] 项目结构创建
+## Known Issues
+(TODO)
 
-## 下一步
-- [ ] 填写 CLAUDE.md 的技术栈和目录约定
-- [ ] 填写 AGENTS.md 的 Build 命令
-- [ ] 填写 memory-bank/techContext.md 的技术栈信息
-- [ ] 用 /think 开始第一个功能
+## Next Milestone
+(TODO)
 "@
+Set-Content -Path (Join-Path $ProjectRoot "memory-bank\progress.md") -Value $progress -Encoding UTF8
 
-Write-File (Join-Path $ProjectRoot "memory-bank/systemPatterns.md") @"
-# 系统架构模式
-（待填写）
+$techCtx = @"
+# Tech Context
+
+Updated: $ts
+
+## Tech Stack
+- Language: (TODO, e.g. Python 3.12)
+- Framework: (TODO, e.g. FastAPI 0.110)
+- Database: (TODO)
+- Test Tool: (TODO, e.g. pytest)
+- Package Manager: (TODO, e.g. uv)
+
+## Key Dependencies
+(TODO)
+
+## Dev Environment
+- Run: (TODO)
+- Test: (TODO)
+- Lint: (TODO)
+
+## Known Constraints
+(TODO, e.g. Python 3.10 compatibility)
 "@
+Set-Content -Path (Join-Path $ProjectRoot "memory-bank\techContext.md") -Value $techCtx -Encoding UTF8
 
-Write-File (Join-Path $ProjectRoot "memory-bank/lessons.md") @"
-# 踩坑记录
-（首次使用时此文件为空，遇到值得记录的问题后通过 /wrap 添加）
+$const = @"
+# $ProjectName Constitution
+
+> Project's supreme rules. All development must follow these principles.
+
+## Non-Negotiable
+
+### Quality底线
+- Coverage: service >= 85%, API >= 70%
+- No bare except/catch, must specify exception type
+
+### Security红线
+- No hardcoded secrets/tokens/keys
+- All user input must be explicitly validated
+
+### Project-Specific Constraints
+(TODO)
 "@
+Set-Content -Path (Join-Path $ProjectRoot "memory-bank\constitution.md") -Value $const -Encoding UTF8
 
-Write-File (Join-Path $ProjectRoot "memory-bank/session-notes.md") @"
-# 会话笔记（自动写入，无需手动维护）
-"@
-
-Write-File (Join-Path $ProjectRoot "memory-bank/progress.md") @"
-# 项目进度
-
-更新时间: $timestamp
-
-## 已完成
-- [x] 项目初始化
-
-## 已知问题
-（待解决的技术债或 bug）
-
-## 下一里程碑
-（待填写）
-"@
-
-Write-File (Join-Path $ProjectRoot "memory-bank/techContext.md") @"
-# 技术上下文
-
-更新时间: $timestamp
-
-## 技术栈
-- 语言：（待填写，例：Python 3.12）
-- 框架：（待填写，例：FastAPI 0.110）
-- 数据库：（待填写）
-- 测试工具：（待填写，例：pytest）
-- 包管理：（待填写，例：uv）
-
-## 关键依赖
-（待填写）
-
-## 开发环境
-- 运行命令：（待填写）
-- 测试命令：（待填写）
-- Lint 命令：（待填写）
-
-## 已知约束
-（待填写，例：Python 3.10 兼容性要求）
-"@
-
-Write-File (Join-Path $ProjectRoot "memory-bank/constitution.md") @"
-# $ProjectName 项目宪法
-
-> 这是项目的最高规范。所有后续开发必须遵守以下原则。
-
-## 不可协商原则
-
-### 质量底线
-- 测试覆盖率: service 层 ≥ 85%，API 层 ≥ 70%
-- 禁止裸 except/catch，必须指定异常类型
-
-### 安全红线
-- 禁止在代码中硬编码 secret/token/key
-- 所有用户输入必须经过显式验证
-
-### 项目特定约束
-（待填写）
-"@
-
-# 复制 Skills（通用 + simulation 类型专用）
-$skillsSource = Join-Path $PessRoot "templates\skills"
-$skillsDest = Join-Path $ProjectRoot ".claude/skills"
-if (Test-Path $skillsSource) {
-    Copy-Item "$skillsSource\security-patterns.md" $skillsDest -ErrorAction SilentlyContinue
-    Copy-Item "$skillsSource\testing-patterns.md"  $skillsDest -ErrorAction SilentlyContinue
+$skillsSrc = Join-Path $PessRoot "templates\skills"
+$skillsDest = Join-Path $ProjectRoot ".claude\skills"
+if (Test-Path $skillsSrc) {
+    Copy-Item "$skillsSrc\security-patterns.md" $skillsDest -ErrorAction SilentlyContinue
+    Copy-Item "$skillsSrc\testing-patterns.md" $skillsDest -ErrorAction SilentlyContinue
     if ($ProjectType -eq "simulation") {
-        Copy-Item "$skillsSource\simulation.md" $skillsDest -ErrorAction SilentlyContinue
+        Copy-Item "$skillsSrc\simulation.md" $skillsDest -ErrorAction SilentlyContinue
     }
 }
 
-# 复制 Commands
-$cmdsSource = Join-Path $PessRoot "templates\commands"
-$cmdsDest = Join-Path $ProjectRoot ".claude/commands"
-if (Test-Path $cmdsSource) {
-    Copy-Item "$cmdsSource\*.md" $cmdsDest -ErrorAction SilentlyContinue
+$cmdsSrc = Join-Path $PessRoot "templates\commands"
+$cmdsDest = Join-Path $ProjectRoot ".claude\commands"
+if (Test-Path $cmdsSrc) {
+    Copy-Item "$cmdsSrc\*.md" $cmdsDest -ErrorAction SilentlyContinue
 }
 
-# 初始化 git
 Set-Location $ProjectRoot
-git init | Out-Null
-Write-File ".gitignore" @"
+git init
+
+$gitignore = @"
 .env
 .env.*
 *.pem
@@ -181,14 +168,16 @@ node_modules/
 dist/
 .DS_Store
 "@
+Set-Content -Path ".gitignore" -Value $gitignore -Encoding UTF8
 
-git add -A | Out-Null
-git commit -m "chore: init project with PESS v3.3" | Out-Null
+git add -A
+git commit -m "chore: init project with PESS v3.3"
 
-Write-Host "`n项目 '$ProjectName' 已初始化 (PESS v3.3)" -ForegroundColor Green
-Write-Host "下一步：" -ForegroundColor Cyan
-Write-Host "  1. 填写 CLAUDE.md 的技术栈和目录约定" -ForegroundColor White
-Write-Host "  2. 填写 AGENTS.md 的 Build 命令" -ForegroundColor White
-Write-Host "  3. 填写 memory-bank/techContext.md" -ForegroundColor White
-Write-Host "  4. 填写 memory-bank/constitution.md" -ForegroundColor White
-Write-Host "  5. 用 /think 开始第一个功能" -ForegroundColor White
+Write-Host ""
+Write-Host "Project '$ProjectName' initialized (PESS v3.3)" -ForegroundColor Green
+Write-Host "Next steps:" -ForegroundColor Cyan
+Write-Host "  1. Fill CLAUDE.md (tech stack and conventions)" -ForegroundColor White
+Write-Host "  2. Fill AGENTS.md Build commands" -ForegroundColor White
+Write-Host "  3. Fill memory-bank/techContext.md" -ForegroundColor White
+Write-Host "  4. Fill memory-bank/constitution.md" -ForegroundColor White
+Write-Host "  5. Use /think to start first feature" -ForegroundColor White
