@@ -1,4 +1,17 @@
-# /wrap — 会话收尾
+# /wrap — 会话收尾 (含 STATUS.md 增量更新, OPT-011+018 合并)
+
+**第零步：STATUS.md 增量更新 (OPT-018 合并)**
+
+如果项目根存在 STATUS.md:
+1. 扫描本次会话的工具调用历史 (audit log 或 memory-bank/session-notes.md)
+2. 更新活跃 feature 的 progress 字段 (N/M AC done)
+3. 不重写 STATUS.md 主体, 只追加本次会话摘要
+4. 状态非法 (e.g. APPLYING 但 0 任务推进) 警告用户
+
+> /wrap 是只读扫描 + 增量更新, 不修改 STATUS.md 状态机
+> 状态推进必须通过 /change 子命令 (propose/apply/archive)
+
+---
 
 **第一步：自动写入（始终执行，无需确认）**
 向 memory-bank/session-notes.md 末尾追加：
