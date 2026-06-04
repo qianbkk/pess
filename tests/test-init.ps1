@@ -56,6 +56,7 @@ Write-Host "--- Commands and Skills ---"
 Assert ((Get-ChildItem "$proj\.claude\commands" -File).Count -ge 5)  "Commands >= 5 files"
 Assert (Test-Path "$proj\.claude\skills\security-patterns.md")    "security-patterns.md copied"
 Assert (Test-Path "$proj\.claude\skills\testing-patterns.md")     "testing-patterns.md copied"
+Assert (-not (Test-Path "$proj\.claude\skills\ato-agent.md"))      "ato-agent.md NOT auto-copied (OPT-002)"
 
 Write-Host ""
 Write-Host "=============================="

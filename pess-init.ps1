@@ -147,6 +147,8 @@ if (Test-Path $skillsSrc) {
     if ($ProjectType -eq "simulation") {
         Copy-Item "$skillsSrc\simulation.md" $skillsDest -ErrorAction SilentlyContinue
     }
+    # 注: ato-agent.md 不会通过 pess-init 自动复制 (OPT-002)
+    # 它是项目专属 skill, 需要用户显式 cp 或 git pull
 }
 
 $cmdsSrc = Join-Path $PessRoot "templates\commands"

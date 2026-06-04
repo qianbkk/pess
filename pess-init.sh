@@ -180,6 +180,9 @@ if [ "$PROJECT_TYPE" = "simulation" ]; then
     cp "$SKILLS_SRC/simulation.md" "$SKILLS_DEST/" 2>/dev/null || true
 fi
 
+# Note: ato-agent.md is NOT auto-copied (OPT-002)
+# It's project-specific and must be manually copied when needed
+
 # Copy commands
 CMDS_SRC="$SCRIPT_DIR/templates/commands"
 CMDS_DEST="$PROJECT_ROOT/.claude/commands"

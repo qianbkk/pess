@@ -1,6 +1,6 @@
 ---
 name: ato-context
-description: "当代码涉及 ATO（Agent Team Orchestrator）项目、多 Agent 编排、协调器 dispatch、FastAPI 后端或 Vite/React 前端时自动加载。提供 ATO 锁定的架构决策和接口规范。不适用于其他项目。"
+description: "ONLY load when user explicitly references ATO (Agent Team Orchestrator) multi-agent orchestration. Do NOT auto-load for general FastAPI/Vite/React work — those have many non-ATO projects. ATO requires dispatcher XML, 15s polling, and specific port allocations documented below."
 ---
 
 ## ATO 项目锁定规范
