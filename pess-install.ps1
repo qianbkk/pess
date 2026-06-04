@@ -11,6 +11,7 @@ New-Item -ItemType Directory -Force -Path $HooksDir | Out-Null
 Copy-Item "$PessRoot\hooks\guard_files.py"    $HooksDir -Force
 Copy-Item "$PessRoot\hooks\guard_commands.py" $HooksDir -Force
 Copy-Item "$PessRoot\hooks\auto_lint.py"      $HooksDir -Force
+Copy-Item "$PessRoot\hooks\inject_context.py" $HooksDir -Force
 Write-Host "Hooks 已安装到 $HooksDir" -ForegroundColor Green
 
 # 3. 验证 Python 可用性
@@ -38,6 +39,7 @@ $settingsPath = "$ClaudeDir\settings.json"
 $newHooksWrite = @{ type = "command"; command = "python `"$HooksDir\guard_files.py`"" }
 $newHooksBash  = @{ type = "command"; command = "python `"$HooksDir\guard_commands.py`"" }
 $newHooksPost  = @{ type = "command"; command = "python `"$HooksDir\auto_lint.py`"" }
+$newHooksStart = @{ type = "command"; command = "python `"$HooksDir\inject_context.py`"" }
 
 if (Test-Path $settingsPath) {
     # 合并到现有 settings.json，不覆盖已有内容
@@ -51,6 +53,9 @@ if (Test-Path $settingsPath) {
     }
     if (-not $existing.hooks.PostToolUse) {
         $existing.hooks | Add-Member -NotePropertyName "PostToolUse" -NotePropertyValue @() -Force
+    }
+    if (-not $existing.hooks.SessionStart) {
+        $existing.hooks | Add-Member -NotePropertyName "SessionStart" -NotePropertyValue @() -Force
     }
 
     # 检查 guard_files 是否已注册（避免重复）
@@ -119,6 +124,27 @@ if (Test-Path $settingsPath) {
         }
     }
 
+    # 检查 inject_context 是否已注册到 SessionStart (避免重复) — OPT-005
+    $alreadyHasInject = $false
+    if ($existing.hooks.SessionStart) {
+        foreach ($entry in $existing.hooks.SessionStart) {
+            if ($entry.hooks -and ($entry.hooks | Where-Object { $_.command -like "*inject_context*" })) {
+                $alreadyHasInject = $true
+                break
+            }
+        }
+    }
+    if (-not $alreadyHasInject) {
+        $entry = @{
+            hooks = @($newHooksStart)
+        }
+        if ($existing.hooks.SessionStart -is [array]) {
+            $existing.hooks.SessionStart += @($entry)
+        } else {
+            $existing.hooks.SessionStart = @($entry)
+        }
+    }
+
     $existing | ConvertTo-Json -Depth 10 | Set-Content $settingsPath -Encoding UTF8
     Write-Host "Hooks 已合并到现有 settings.json" -ForegroundColor Green
 } else {
@@ -131,6 +157,9 @@ if (Test-Path $settingsPath) {
             )
             PostToolUse = @(
                 @{ matcher = "Write|Edit|MultiEdit"; hooks = @($newHooksPost) }
+            )
+            SessionStart = @(
+                @{ hooks = @($newHooksStart) }
             )
         }
     } | ConvertTo-Json -Depth 10 | Set-Content $settingsPath -Encoding UTF8
