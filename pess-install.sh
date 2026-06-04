@@ -18,6 +18,20 @@ cp "$PESS_ROOT/hooks/guard_files.py" "$HOOKS_DIR/"
 cp "$PESS_ROOT/hooks/guard_commands.py" "$HOOKS_DIR/"
 echo "Hooks installed to $HOOKS_DIR"
 
+# 2.5 验证 Python 可用性 (OPT-003 配套, 跨平台一致性)
+PYTHON_OK=0
+for cmd in python python3 py; do
+    ver=$($cmd --version 2>&1 || true)
+    if echo "$ver" | grep -qE "^Python 3\.[89]|^Python 3\.1[0-9]|^Python 3\.1[2-9]"; then
+        echo "Python detected: $ver"
+        PYTHON_OK=1
+        break
+    fi
+done
+if [ "$PYTHON_OK" -eq 0 ]; then
+    echo "Warning: Python 3.8+ not detected. Hooks installed but may not run; install Python 3.8+ and ensure it is in PATH." >&2
+fi
+
 # 3. Write settings.json
 SETTINGS_PATH="$CLAUDE_DIR/settings.json"
 NEW_HOOKS_JSON='{

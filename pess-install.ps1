@@ -17,7 +17,10 @@ $pythonOk = $false
 foreach ($cmd in @("python", "python3", "py")) {
     try {
         $ver = & $cmd --version 2>&1
-        if ($ver -match "Python 3\.[89]|3\.1[0-9]|Python 3\.1[2-9]") {
+        # 修复(OPT-003): 在 "3\.1[0-9]" 前加 "Python " 前缀
+        # 原写法 "Python 3\.[89]|3\.1[0-9]|Python 3\.1[2-9]" 中,
+        # 单独的 "3\.1[0-9]" 没有 Python 前缀, 可能误判含 "3.10" 字面量的字符串
+        if ($ver -match "^Python 3\.[89]|^Python 3\.1[0-9]|^Python 3\.1[2-9]") {
             Write-Host "Python 检测: $ver ✅" -ForegroundColor Green
             $pythonOk = $true
             break
