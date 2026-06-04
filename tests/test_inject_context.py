@@ -171,7 +171,7 @@ def test_max_chars_truncation():
 
 
 def test_injects_multiple_files_in_order():
-    """多个 memory-bank 文件应按 INJECT_FILES 顺序拼接"""
+    """多个 memory-bank 文件应按 INJECT_FILES 顺序拼接 (constitution 最优先)"""
     with tempfile.TemporaryDirectory() as tmp:
         proj = Path(tmp) / "p"
         (proj / "memory-bank").mkdir(parents=True)
@@ -185,12 +185,79 @@ def test_injects_multiple_files_in_order():
         )
         assert code == 0, f"expected exit 0, got {code}"
         ctx = json.loads(stdout.strip())["hookSpecificOutput"]["additionalContext"]
-        # activeContext 应在 progress 之前, progress 在 constitution 之前
+        # 新优先级: constitution 最先 (不可协商底线)
+        c_pos = ctx.find("CCC_constitution")
         a_pos = ctx.find("AAA_activeContext")
         b_pos = ctx.find("BBB_progress")
-        c_pos = ctx.find("CCC_constitution")
-        assert 0 < a_pos < b_pos < c_pos, f"order wrong: a={a_pos} b={b_pos} c={c_pos}"
-    print(f"  PASS  多文件按 INJECT_FILES 顺序拼接")
+        assert 0 < c_pos < a_pos < b_pos, f"order wrong: c={c_pos} a={a_pos} b={b_pos}"
+    print(f"  PASS  多文件按重要性顺序拼接 (constitution 优先)")
+
+
+def test_sessionnotes_injected():
+    """session-notes.md 必须被注入 (B3 修复)"""
+    with tempfile.TemporaryDirectory() as tmp:
+        proj = Path(tmp) / "p"
+        (proj / "memory-bank").mkdir(parents=True)
+        (proj / "memory-bank" / "session-notes.md").write_text("IMPORTANT_NOTE_XYZ", encoding="utf-8")
+        code, stdout, stderr = run_hook(
+            {"hook_event_name": "SessionStart"},
+            cwd=str(proj),
+        )
+        assert code == 0, f"expected exit 0, got {code}"
+        ctx = json.loads(stdout.strip())["hookSpecificOutput"]["additionalContext"]
+        assert "session-notes.md" in ctx, f"session-notes.md not injected"
+        assert "IMPORTANT_NOTE_XYZ" in ctx
+    print(f"  PASS  session-notes.md 被注入 (B3 修复)")
+
+
+def test_cwd_from_stdin_payload():
+    """stdin payload 的 cwd 字段应被优先使用 (B1 修复)"""
+    with tempfile.TemporaryDirectory() as tmp:
+        proj = Path(tmp) / "real-project"
+        (proj / "memory-bank").mkdir(parents=True)
+        (proj / "memory-bank" / "activeContext.md").write_text("FROM_REAL_PROJECT", encoding="utf-8")
+        # 模拟 cwd 字段指向 real-project
+        code, stdout, stderr = run_hook(
+            {"hook_event_name": "SessionStart", "cwd": str(proj)},
+            cwd=tmp,  # 实际 cwd 不在项目里
+        )
+        assert code == 0, f"expected exit 0, got {code}"
+        out = stdout.strip()
+        if out:
+            ctx = json.loads(out)["hookSpecificOutput"]["additionalContext"]
+            assert "FROM_REAL_PROJECT" in ctx, f"stdin cwd not honored: {ctx[:200]}"
+    print(f"  PASS  stdin payload 的 cwd 字段被优先使用 (B1 修复)")
+
+
+def test_per_file_budget_allocation():
+    """per-file 截断应按权重分配预算 (B5 修复)"""
+    with tempfile.TemporaryDirectory() as tmp:
+        proj = Path(tmp) / "p"
+        (proj / "memory-bank").mkdir(parents=True)
+        # activeContext 写 100KB (大于其预算 20% * 1000 = 200 chars)
+        big = "X" * 100000
+        (proj / "memory-bank" / "activeContext.md").write_text(big, encoding="utf-8")
+        (proj / "memory-bank" / "constitution.md").write_text("CONSTITUTION_VAL", encoding="utf-8")
+
+        env_input = json.dumps({"hook_event_name": "SessionStart"})
+        result = subprocess.run(
+            [sys.executable, str(HOOK)],
+            input=env_input,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            timeout=10,
+            cwd=str(proj),
+            env={"PATH": __import__("os").environ.get("PATH", ""),
+                 "PYTHONIOENCODING": "utf-8",
+                 "PESS_INJECT_MAX_CHARS": "1000"},
+        )
+        assert result.returncode == 0
+        ctx = json.loads(result.stdout.strip())["hookSpecificOutput"]["additionalContext"]
+        # constitution 应被完整保留 (1KB 总预算中, 它有 25% = 250 chars)
+        # 关键: 100KB activeContext 不应挤掉 constitution
+        assert "CONSTITUTION_VAL" in ctx, "constitution should survive per-file budget"
+    print(f"  PASS  per-file 预算分配 (constitution 不被 activeContext 挤掉)")
 
 
 if __name__ == "__main__":
@@ -204,6 +271,10 @@ if __name__ == "__main__":
         test_bad_stdin_failsafe,
         test_max_chars_truncation,
         test_injects_multiple_files_in_order,
+        # B1/B3/B5 reviewer blocker 修复后的测试
+        test_sessionnotes_injected,
+        test_cwd_from_stdin_payload,
+        test_per_file_budget_allocation,
     ]
     failed = 0
     for t in tests:
