@@ -1,36 +1,49 @@
-# /plan — 任务分解与执行计划
+# /plan — 任务分解 + 强制 TDD (OPT-017 升级)
 
-**第一步：读取上下文（只读与本次任务直接相关的文件）**
-1. 读 memory-bank/activeContext.md（当前状态）
-2. 读 memory-bank/progress.md（如存在，整体进度）
-3. 如果涉及架构变化，读 memory-bank/systemPatterns.md
-4. 如果是 Bug 修复，读 memory-bank/lessons.md
+> **触发条件**: spec 已确定方向后, /change propose 之前使用
+> **依赖**: /clarify-prod 或 /clarify-arch 推荐 (不强制)
 
-**第二步：生成执行计划**
-格式：
+---
+
+## 输出格式（每个 T-N 必含 Test First）
+
+```markdown
+# Plan: <feature-name>
+
+## 任务分解
+
+### T-001 [S] 数据模型设计
+- [Test] 写 test_models.py: 验证 User/Post/Comment schema
+- [Impl] 实现 SQLAlchemy models
+- [Verify] `pytest tests/test_models.py -v`
+
+### T-002 [M] API endpoint 实现
+- [Test] 写 test_api.py: 验证 GET/POST/PUT/DELETE
+- [Impl] FastAPI routes
+- [Verify] `pytest tests/test_api.py -v` + 集成测试
+
+### T-003 [L] 性能回归检查
+- [Test] 写 bench_api.py: locust 压测
+- [Impl] 加缓存层
+- [Verify] P99 < 200ms
+
+## 验收标准
+- [ ] 所有 T-N 的 Test First 子任务完成
+- [ ] coverage ≥ 80%
+- [ ] constitution.md 红线 0 突破
 ```
-任务：[一句话描述]
-复杂度预估：[S/M/L/XL]
 
-影响范围：
-  修改： [文件路径]
-  新建： [文件路径]
-  不影响： [明确排除]
+---
 
-任务拆分：
-  [T-001] [任务描述]  [复杂度]  [验证标准]
-  [T-002] [任务描述]  [复杂度]  [依赖 T-001]  [验证标准]
+## 与 testing-patterns skill 联动
 
-测试策略：
-  单元测试：[函数列表]
-  集成测试：[接口/路径]
-  手动验证：[操作步骤]
-```
+- description 包含 "TDD skill auto-loaded" 提示
+- AI 自动加载 testing-patterns skill
+- 每个 T-N 强制含 [Test] 子任务（无 [Test] 的 T-N 被 plan 拒绝）
 
-**第三步：并行标记**
-识别可并行执行的任务组：
-- 波次 1（并行）：[T-001, T-002]
-- 波次 2（需等波次 1）：[T-003]
+---
 
-**第四步：等待确认**
-输出计划后等待我说"ok"、"开始"或具体修改意见，不要自动开始执行。
+## 并行标记
+
+- 同一波次的 T-N 可并行
+- 不同波次依赖关系显式标注
