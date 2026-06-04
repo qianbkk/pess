@@ -1,5 +1,42 @@
 # CHANGELOG
 
+## v3.7.0 (2026-06-05) — 可观测性 + 健壮性
+
+### 新增
+- `hooks/utils.py`: safe_read_stdin() 集中处理 JSON 异常 (5 项边界: 正常/空/非法/截断/超大/Unicode)
+- `hooks/async_audit.py`: 异步 audit log 写入 ~/.claude/pess-audit.log (30 天滚动)
+- `hooks/whitelist.py`: 路径白名单机制 (默认 .pess-test/ .pess-sandbox/)
+- `hooks/pre_stop_check.py`: Stop 软门禁 (AI 声称完成但未跑测试 → 警告)
+- `/retro` 命令: 7/30 天 audit log 统计 (命令频次/文件热区/guard 拦截率)
+- `tests/conftest.py`: 5 个共享 fixture (tmp_pess_root, mock_settings_json, etc.)
+- `/doctor` 步骤 5: STATUS.md 一致性检查
+
+### 修复
+- `tests/test_utils.py`: 6 项 Assert 覆盖 safe_read_stdin
+
+---
+
+## v3.5.0 (2026-06-05) — Python 化 + 棕地变更
+
+### 新增
+- `pess.py`: Python 统一入口 (install 完整实现, init/update/doctor Phase 2 占位)
+- `engine.py`: 模板引擎 3 原语 (变量/条件/循环), 不引入 jinja2
+- `scripts/validate_status.py`: STATUS.md 状态机验证
+- `STATUS.md`: 跨会话共享黑板 schema 模板
+- `/careful`, `/freeze`: 2 独立护栏命令
+- `/clarify-prod`, `/clarify-arch`: 2 层治理流水线 (Decision Card + ADR 草稿)
+- `/plan` 升级: 每个 T-N 必含 [Test] 子任务 (强制 TDD)
+
+### CI 集成
+- `pess-quality.yml` 新增 2 步: Validate STATUS.md + progress.md staleness 警告
+
+### 测试
+- test_status_validator: 4 项
+- test_pess: 4 项
+- test_engine: 9 项
+
+---
+
 ## v3.3.3 (2026-06-05)
 
 ### P0 紧急修复 — 3 张 1 行级修复

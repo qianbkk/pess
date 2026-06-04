@@ -1,5 +1,22 @@
 # /doctor — PESS 系统健康检查
 
+> **触发条件**: 用户输入 /doctor
+> **目的**: 5 步系统健康检查, 输出报告
+
+---
+
+## 步骤 5: STATUS.md 一致性检查 (OPT-025)
+
+如果项目根存在 STATUS.md, 执行:
+1. 验证 STATUS.md schema 合法 (调 scripts/validate_status.py)
+2. 状态流转无循环 (PROPOSED → APPLYING → TESTING → ARCHIVED)
+3. 孤儿 feature 检测 (proposal.md 缺失但 STATUS.md 有该 feature)
+4. 状态非法时给出修复建议
+
+> 注: /doctor 是本地版, CI 远端版见 pess-quality.yml Validate STATUS.md step
+
+---
+
 ## 第一步：检查 PESS 安装状态
 
 **检查项**（请报告每项结果）：
