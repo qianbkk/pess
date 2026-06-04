@@ -12,6 +12,7 @@ Copy-Item "$PessRoot\hooks\guard_files.py"    $HooksDir -Force
 Copy-Item "$PessRoot\hooks\guard_commands.py" $HooksDir -Force
 Copy-Item "$PessRoot\hooks\auto_lint.py"      $HooksDir -Force
 Copy-Item "$PessRoot\hooks\inject_context.py" $HooksDir -Force
+Copy-Item "$PessRoot\hooks\enforce_constitution.py" $HooksDir -Force
 Write-Host "Hooks 已安装到 $HooksDir" -ForegroundColor Green
 
 # 3. 验证 Python 可用性
@@ -40,6 +41,7 @@ $newHooksWrite = @{ type = "command"; command = "python `"$HooksDir\guard_files.
 $newHooksBash  = @{ type = "command"; command = "python `"$HooksDir\guard_commands.py`"" }
 $newHooksPost  = @{ type = "command"; command = "python `"$HooksDir\auto_lint.py`"" }
 $newHooksStart = @{ type = "command"; command = "python `"$HooksDir\inject_context.py`"" }
+$newHooksUser  = @{ type = "command"; command = "python `"$HooksDir\enforce_constitution.py`"" }
 
 if (Test-Path $settingsPath) {
     # 合并到现有 settings.json，不覆盖已有内容
@@ -56,6 +58,9 @@ if (Test-Path $settingsPath) {
     }
     if (-not $existing.hooks.SessionStart) {
         $existing.hooks | Add-Member -NotePropertyName "SessionStart" -NotePropertyValue @() -Force
+    }
+    if (-not $existing.hooks.UserPromptSubmit) {
+        $existing.hooks | Add-Member -NotePropertyName "UserPromptSubmit" -NotePropertyValue @() -Force
     }
 
     # 检查 guard_files 是否已注册（避免重复）
@@ -145,6 +150,27 @@ if (Test-Path $settingsPath) {
         }
     }
 
+    # 检查 enforce_constitution 是否已注册到 UserPromptSubmit (避免重复) — OPT-028
+    $alreadyHasConstitution = $false
+    if ($existing.hooks.UserPromptSubmit) {
+        foreach ($entry in $existing.hooks.UserPromptSubmit) {
+            if ($entry.hooks -and ($entry.hooks | Where-Object { $_.command -like "*enforce_constitution*" })) {
+                $alreadyHasConstitution = $true
+                break
+            }
+        }
+    }
+    if (-not $alreadyHasConstitution) {
+        $entry = @{
+            hooks = @($newHooksUser)
+        }
+        if ($existing.hooks.UserPromptSubmit -is [array]) {
+            $existing.hooks.UserPromptSubmit += @($entry)
+        } else {
+            $existing.hooks.UserPromptSubmit = @($entry)
+        }
+    }
+
     $existing | ConvertTo-Json -Depth 10 | Set-Content $settingsPath -Encoding UTF8
     Write-Host "Hooks 已合并到现有 settings.json" -ForegroundColor Green
 } else {
@@ -160,6 +186,9 @@ if (Test-Path $settingsPath) {
             )
             SessionStart = @(
                 @{ hooks = @($newHooksStart) }
+            )
+            UserPromptSubmit = @(
+                @{ hooks = @($newHooksUser) }
             )
         }
     } | ConvertTo-Json -Depth 10 | Set-Content $settingsPath -Encoding UTF8

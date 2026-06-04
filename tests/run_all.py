@@ -22,9 +22,10 @@ if hasattr(sys.stdout, "reconfigure"):
 
 TESTS_DIR = Path(__file__).resolve().parent
 PYTEST_SUITES = [
-    "test_hooks.py",          # 20 项 — core guards
-    "test_auto_lint.py",      # 14 项 — PostToolUse lint
-    "test_inject_context.py", # 11 项 — SessionStart inject
+    "test_hooks.py",                # 20 项 — core guards
+    "test_auto_lint.py",            # 14 项 — PostToolUse lint
+    "test_inject_context.py",       # 11 项 — SessionStart inject
+    "test_enforce_constitution.py", # 5 项 — UserPromptSubmit 复习宪法 (OPT-028)
 ]
 
 
