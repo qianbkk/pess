@@ -16,3 +16,6 @@ desktop.ini
 
 # Test artifacts
 tests/output/
+
+# Local-only tools (quota check scripts, dev helpers) — never commit
+.pess-tools/
