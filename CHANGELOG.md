@@ -1,5 +1,30 @@
 # CHANGELOG
 
+## v3.3.3 (2026-06-05)
+
+### P0 紧急修复 — 3 张 1 行级修复
+
+#### OPT-001: 修退出码协议 (exit 0 → exit 2)
+**问题**: `hooks/guard_files.py` 和 `hooks/guard_commands.py` 在 HARD_BLOCK 命中时调用 `sys.exit(0)`。Claude Code PreToolUse 协议下 `exit 0 = 放行`，导致 17 条硬规则形同虚设，core 防护层完全失效。
+**修复**: HARD_BLOCK 路径改为 `sys.exit(2)`；block JSON 改输出到 stderr（协议规定 stderr 反馈给 Claude）
+**测试**: 8 → 20 项 Assert（覆盖全部 17 条规则 + fail-open 边界）
+
+#### OPT-002: ato-agent 显式触发语义闸门
+**问题**: 旧 description "涉及 FastAPI/Vite/React 时自动加载" 范围过宽，可能在非 ATO 项目中误激活
+**修复**: description 改为 "ONLY load when user explicitly references ATO multi-agent orchestration"，并明确排除 "general FastAPI/Vite/React work"
+**测试**: test-init.ps1 新增 1 项 Assert 验证 default 项目类型 skills 目录不含 ato-agent.md
+
+#### OPT-003: Python 正则需 `Python ` 前缀
+**问题**: 旧正则 `Python 3\.[89]|3\.1[0-9]|Python 3\.1[2-9]` 中间 `3\.1[0-9]` 无 `Python ` 前缀，可能误判 `Error 3.10 happened` 为合法 Python 3.10+ 版本
+**修复**: 统一加 `^Python ` 锚定开头；同步给 pess-install.sh 添加缺失的 Python 检测（之前 sh 版本完全无此检查）
+**测试**: PowerShell 模拟 3 个场景 — Python 3.10 PASS / Python 3.12 PASS / "Error 3.10 happened" 正确 REJECTED
+
+### 改进
+- 退出码协议修复后，hooks 真正承担"主动防御"角色
+- pess-install.ps1/sh 跨平台 Python 检测现在逻辑一致
+
+---
+
 ## 计划中 (v3.4.0 — Sprint 1 P0)
 
 ### 任务卡（27 张 → 28 张，含用户确认的 hooks#4 独立卡）
