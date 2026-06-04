@@ -10,6 +10,7 @@ New-Item -ItemType Directory -Force -Path $HooksDir | Out-Null
 # 2. 复制 hooks
 Copy-Item "$PessRoot\hooks\guard_files.py"    $HooksDir -Force
 Copy-Item "$PessRoot\hooks\guard_commands.py" $HooksDir -Force
+Copy-Item "$PessRoot\hooks\auto_lint.py"      $HooksDir -Force
 Write-Host "Hooks 已安装到 $HooksDir" -ForegroundColor Green
 
 # 3. 验证 Python 可用性
@@ -36,6 +37,7 @@ $settingsPath = "$ClaudeDir\settings.json"
 
 $newHooksWrite = @{ type = "command"; command = "python `"$HooksDir\guard_files.py`"" }
 $newHooksBash  = @{ type = "command"; command = "python `"$HooksDir\guard_commands.py`"" }
+$newHooksPost  = @{ type = "command"; command = "python `"$HooksDir\auto_lint.py`"" }
 
 if (Test-Path $settingsPath) {
     # 合并到现有 settings.json，不覆盖已有内容
@@ -46,6 +48,9 @@ if (Test-Path $settingsPath) {
     }
     if (-not $existing.hooks.PreToolUse) {
         $existing.hooks | Add-Member -NotePropertyName "PreToolUse" -NotePropertyValue @() -Force
+    }
+    if (-not $existing.hooks.PostToolUse) {
+        $existing.hooks | Add-Member -NotePropertyName "PostToolUse" -NotePropertyValue @() -Force
     }
 
     # 检查 guard_files 是否已注册（避免重复）
@@ -92,6 +97,28 @@ if (Test-Path $settingsPath) {
         }
     }
 
+    # 检查 auto_lint 是否已注册到 PostToolUse (避免重复) — OPT-004
+    $alreadyHasLint = $false
+    if ($existing.hooks.PostToolUse) {
+        foreach ($entry in $existing.hooks.PostToolUse) {
+            if ($entry.hooks -and ($entry.hooks | Where-Object { $_.command -like "*auto_lint*" })) {
+                $alreadyHasLint = $true
+                break
+            }
+        }
+    }
+    if (-not $alreadyHasLint) {
+        $entry = @{
+            matcher = "Write|Edit|MultiEdit"
+            hooks   = @($newHooksPost)
+        }
+        if ($existing.hooks.PostToolUse -is [array]) {
+            $existing.hooks.PostToolUse += @($entry)
+        } else {
+            $existing.hooks.PostToolUse = @($entry)
+        }
+    }
+
     $existing | ConvertTo-Json -Depth 10 | Set-Content $settingsPath -Encoding UTF8
     Write-Host "Hooks 已合并到现有 settings.json" -ForegroundColor Green
 } else {
@@ -101,6 +128,9 @@ if (Test-Path $settingsPath) {
             PreToolUse = @(
                 @{ matcher = "Write|Edit|MultiEdit"; hooks = @($newHooksWrite) },
                 @{ matcher = "Bash";                 hooks = @($newHooksBash) }
+            )
+            PostToolUse = @(
+                @{ matcher = "Write|Edit|MultiEdit"; hooks = @($newHooksPost) }
             )
         }
     } | ConvertTo-Json -Depth 10 | Set-Content $settingsPath -Encoding UTF8
