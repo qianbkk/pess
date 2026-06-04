@@ -11,11 +11,12 @@ HARD_BLOCK = [".env", ".pem", ".key", ".pfx", "secrets.yaml", "secrets.json"]
 SOFT_WARN = ["/core/", "/migrations/", "settings.py", "config.py"]
 
 if any(basename.endswith(p) or basename == p for p in HARD_BLOCK):
+    # 修复：Claude Code PreToolUse 协议下 exit 0 = 放行，必须 exit 2 才能阻断
     print(json.dumps({
         "action": "block",
         "message": f"⛔ 受保护文件: {path}\n如需修改，请在输入中明确说'强制修改 {basename}'"
-    }))
-    sys.exit(0)
+    }), file=sys.stderr)
+    sys.exit(2)
 
 if any(p in path for p in SOFT_WARN):
     print(json.dumps({

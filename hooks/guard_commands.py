@@ -20,9 +20,11 @@ SOFT_WARN_RE = [
 
 for pattern in HARD_BLOCK_RE:
     if re.search(pattern, cmd, re.IGNORECASE):
+        # 修复：Claude Code PreToolUse 协议下 exit 0 = 放行，必须 exit 2 才能阻断
         print(json.dumps({"action": "block",
-                          "message": f"⛔ 危险命令已拦截: {cmd}\n请手动执行此操作"}))
-        sys.exit(0)
+                          "message": f"⛔ 危险命令已拦截: {cmd}\n请手动执行此操作"}),
+              file=sys.stderr)
+        sys.exit(2)
 
 for pattern in SOFT_WARN_RE:
     if re.search(pattern, cmd, re.IGNORECASE):
