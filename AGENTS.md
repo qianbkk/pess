@@ -39,7 +39,5 @@
 - templates/adr-template.md → ADR writing template
 
 ## Multi-Tool Support
-PESS targets Claude Code as primary. When setting up for other tools:
-- Claude Code: .claude/commands/ + .claude/skills/ + CLAUDE.md
-- Cursor: .cursorrules (run `pess-init --tool cursor`)
-- GitHub Copilot: .github/copilot-instructions.md (run `pess-init --tool copilot`)
+**当前范围：仅 Claude Code**（hooks 路径、commands、skills 全部 Claude 适配）。
+跨平台适配（Cursor / GitHub Copilot）规划中，本优化批次（v3.4.0）暂不实施。

@@ -6,7 +6,7 @@
 
 **版本：** 3.3.1
 **基准日期：** 2026-05-31
-**适用工具：** Claude Code（主力）/ Cursor / GitHub Copilot
+**适用工具：** **Claude Code**（本次优化范围；Cursor / GitHub Copilot 跨平台适配计划中，详见 CHANGELOG）
 **设计目标：** 让个人开发者在 vibe coding 复杂项目时获得可持续的质量保障
 
 ---

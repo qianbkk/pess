@@ -1,5 +1,27 @@
 # CHANGELOG
 
+## 计划中 (v3.4.0 — Sprint 1 P0)
+
+### 任务卡（27 张 → 28 张，含用户确认的 hooks#4 独立卡）
+- **PESS-OPT-001** 修退出码协议 (exit 0→2)
+- **PESS-OPT-002** 修 ato-agent 永不自动复制 bug
+- **PESS-OPT-003** pess-install.ps1 Python 正则加 `Python ` 前缀
+- **PESS-OPT-004** PostToolUse 自动 lint hook
+- **PESS-OPT-005** SessionStart 注入 memory-bank
+- **PESS-OPT-006** 补 bash install 跨平台测试
+- **PESS-OPT-007** 补 hooks pytest（17 条规则全覆盖）
+- **PESS-OPT-008** 新增 `/clarify` 命令
+- **PESS-OPT-009** 新增 `/change` 命令族
+- **PESS-OPT-010** PESS 入门套件
+- **PESS-OPT-028**（用户确认独立成卡）UserPromptSubmit 复习宪法 hook
+
+### 范围决策
+- **本次优化仅限 Claude Code**：README.md 和 AGENTS.md 中的 Cursor / GitHub Copilot 跨平台声称已标注"规划中，暂不实施"
+- hooks/commands/skills 全部针对 Claude Code 的 settings.json 协议开发
+- 跨平台适配作为独立 PESS-OPT-029 任务（v3.8.0 远期）保留
+
+---
+
 ## v3.3.2 (2026-05-31)
 
 ### 修复
