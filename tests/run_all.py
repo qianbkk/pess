@@ -28,11 +28,44 @@ PYTEST_SUITES = [
     "test_enforce_constitution.py", # 5 项 — UserPromptSubmit 复习宪法 (OPT-028)
     "test_utils.py",                # 6 项 — stdin JSON 异常处理 (OPT-021)
     "test_engine.py",               # 9 项 — 模板引擎 3 原语 (OPT-013)
-    "test_pess.py",                 # 4 项 — pess.py 统一入口 (OPT-012)
     "test_status_validator.py",     # 4 项 — STATUS.md 状态机 (OPT-014)
     "test_async_audit.py",          # 7 项 — 异步 audit + 30 天滚动 (OPT-024 v3.8.0)
     "test_whitelist.py",            # 5 项 — 路径白名单 (OPT-022 v3.8.0)
+    "test_pre_stop_check.py",       # 6 项 — Stop 软门禁 (OPT-023 v3.8.0)
 ]
+
+# 需要 pytest 运行 (因含 fixture-style 测试)
+PYTEST_FRAMEWORK_SUITES = [
+    "test_pess.py",                 # 9 项 (4 传统 + 5 fixture)
+]
+
+
+def run_suite(suite_name: str) -> bool:
+    """运行单个测试套件"""
+    suite_path = TESTS_DIR / suite_name
+    print(f"\n=== {suite_name} ===")
+    if suite_name in PYTEST_FRAMEWORK_SUITES:
+        result = subprocess.run(
+            [sys.executable, "-m", "pytest", str(suite_path), "-v", "--tb=short"],
+            capture_output=True,
+            text=True,
+            timeout=120,
+        )
+        # 打印输出
+        if result.stdout:
+            print(result.stdout)
+        if result.stderr:
+            print("STDERR:", result.stderr[-500:])
+    else:
+        result = subprocess.run(
+            [sys.executable, str(suite_path)],
+            capture_output=True,
+            text=True,
+            timeout=60,
+        )
+        if result.stdout:
+            print(result.stdout)
+    return result.returncode == 0
 
 
 def run_suite(suite_name: str) -> bool:
@@ -49,7 +82,7 @@ def run_suite(suite_name: str) -> bool:
 
 def main():
     args = sys.argv[1:]
-    suites = PYTEST_SUITES
+    suites = PYTEST_SUITES + PYTEST_FRAMEWORK_SUITES
     if "--hooks-only" in args:
         suites = ["test_hooks.py"]
 
