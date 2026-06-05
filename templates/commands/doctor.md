@@ -1,3 +1,8 @@
+---
+name: doctor
+description: "Use when user wants to check PESS system health. Triggers 5-step local diagnosis: install state, file consistency, template render, git state, STATUS.md schema."
+---
+
 # /doctor — PESS 系统健康检查
 
 > **触发条件**: 用户输入 /doctor

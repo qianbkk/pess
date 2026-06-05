@@ -16,7 +16,7 @@ PESS 由 4 个核心组件构成：
 | `/checkpoint` | 质量门控（覆盖率门控 + 回滚协议） | 每完成一个逻辑单元 |
 | `/review` | 多维度审查（正确性/规范/安全/测试） | 提 PR 前 |
 | `/wrap` | 会话收尾（自动更新 progress.md） | 结束工作时 |
-| `/specify` | 功能规格文档（User Story + Task List + Test Strategy） | 在 /plan 之前 |
+| `/specify` (规划中) | 功能规格文档（User Story + Task List + Test Strategy） | 在 /plan 之前 |
 
 ### Skills（自动触发，无命令调用）
 | Skill | 触发条件 |

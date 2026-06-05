@@ -1,3 +1,8 @@
+---
+name: review
+description: "Use before submitting a PR. Triggers multi-dimensional code review (correctness/spec/security/test). Do not load for personal scratch work."
+---
+
 # /review — 多维度代码审查
 
 对 `git diff HEAD` 或指定的文件执行以下检查：

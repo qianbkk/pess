@@ -1,3 +1,8 @@
+---
+name: think
+description: "Use before writing any code. Triggers red-team challenge on assumptions + scope confirmation. Do not load for typo fixes or one-line changes."
+---
+
 # /think — 挑战假设阶段
 
 在写任何代码之前，扮演一个对这个需求持怀疑态度的、经验丰富的工程师：

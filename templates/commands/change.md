@@ -1,3 +1,8 @@
+---
+name: change
+description: "Use when user wants to track a feature as a formal change with status machine (PROPOSED → APPLYING → TESTING → ARCHIVED). Triggers one of three subcommands: propose, apply, archive."
+---
+
 # /change — 功能变更命令族 (OPT-009)
 
 > **3 个子命令**: propose → apply → archive

@@ -26,22 +26,38 @@ for key in ['HTTP_PROXY', 'HTTPS_PROXY', 'ALL_PROXY']:
 
 
 def cmd_install(args) -> int:
-    """PESS 全局组件安装 (合并原 pess-install.ps1 逻辑)"""
+    """PESS 全局组件安装 (v3.8.0 权威源, PS1/Bash 改为 shim 调用)"""
     pess_root = Path(__file__).resolve().parent
     claude_dir = Path.home() / ".claude"
     hooks_dir = claude_dir / "hooks"
     hooks_dir.mkdir(parents=True, exist_ok=True)
 
-    # 复制 hooks
-    hook_files = ["guard_files.py", "guard_commands.py",
-                  "auto_lint.py", "inject_context.py", "enforce_constitution.py"]
+    # 1. Python 3.8+ 检测 (OPT-003 跨平台一致性)
+    py_ok = False
+    for cmd in ["python", "python3", "py"]:
+        try:
+            import subprocess
+            r = subprocess.run([cmd, "--version"], capture_output=True, text=True, timeout=3)
+            if r.returncode == 0 and "Python 3" in r.stdout:
+                print(f"Python detected: {r.stdout.strip()}")
+                py_ok = True
+                break
+        except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
+            pass
+    if not py_ok:
+        print("Warning: Python 3.8+ not detected. Hooks may not run.", file=sys.stderr)
+
+    # 2. 复制 hooks
+    hook_files = ["guard_files.py", "guard_commands.py", "auto_lint.py",
+                  "inject_context.py", "enforce_constitution.py",
+                  "audit_writer.py", "utils.py", "whitelist.py"]
     for hf in hook_files:
         src = pess_root / "hooks" / hf
         if src.is_file():
             (hooks_dir / hf).write_text(src.read_text(encoding="utf-8"), encoding="utf-8")
     print(f"Hooks installed to {hooks_dir}")
 
-    # 合并 settings.json
+    # 3. 合并 settings.json (权威源, 替代 PS1/Bash 三处重复实现)
     settings_path = claude_dir / "settings.json"
     existing = {}
     if settings_path.is_file():
@@ -56,7 +72,6 @@ def cmd_install(args) -> int:
     session = hooks.setdefault("SessionStart", [])
     ups = hooks.setdefault("UserPromptSubmit", [])
 
-    # 去重 + 追加
     def has_hook(entries, name):
         for e in entries:
             for h in e.get("hooks", []):
@@ -80,6 +95,15 @@ def cmd_install(args) -> int:
 
     settings_path.write_text(json.dumps(existing, indent=2, ensure_ascii=False), encoding="utf-8")
     print(f"settings.json updated: {settings_path}")
+
+    # 4. 复制全局 CLAUDE.md (如不存在)
+    global_claude = claude_dir / "CLAUDE.md"
+    if not global_claude.is_file():
+        src = pess_root / "templates" / "global-CLAUDE.md"
+        if src.is_file():
+            global_claude.write_text(src.read_text(encoding="utf-8"), encoding="utf-8")
+            print(f"Global CLAUDE.md installed: {global_claude}")
+
     return 0
 
 

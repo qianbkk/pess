@@ -1,3 +1,8 @@
+---
+name: plan
+description: "Use when direction is confirmed and user needs task breakdown. Triggers T-N format with mandatory [Test] sub-tasks. Do not load for trivial single-file changes."
+---
+
 # /plan — 任务分解 + 强制 TDD (OPT-017 升级)
 
 > **触发条件**: spec 已确定方向后, /change propose 之前使用

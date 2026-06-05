@@ -1,3 +1,8 @@
+---
+name: freeze
+description: "Use when user wants to lock a directory from writes. Triggers .pess-freeze.json update. Do not load for read-only access."
+---
+
 # /freeze — 目录级写锁定 (OPT-015)
 
 > **触发条件**: 用户输入 /freeze <path> 锁定目录

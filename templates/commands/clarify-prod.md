@@ -1,3 +1,8 @@
+---
+name: clarify-prod
+description: "Use after /clarify and before /plan. Triggers 5-step product review (value/priority/ROI/risk/alternatives), outputs Decision Card."
+---
+
 # /clarify-prod — 产品决策审查 (OPT-016)
 
 > **触发条件**: 在 /clarify 之后, /plan 之前使用
@@ -55,5 +60,5 @@
 
 ## 失败处理
 
-- spec.md 不存在: 提示 "请先 /specify"
+- spec.md 不存在: 提示 "请先生成 spec (手动或 /specify 计划中)"
 - 任何审查项用户回答 "跳过": 标记为未决定, 继续后续问题

@@ -72,15 +72,15 @@ else
     FAIL=$((FAIL + 1))
 fi
 
-# Test 5: pess-install.sh 包含 Python 检测 (跨平台一致性)
+# Test 5: pess-install.sh 含 Python 调用 (v3.8.0: shim 调 pess.py)
 echo ""
-echo "--- Python 检测 (跨平台) ---"
+echo "--- Python 调用 (跨平台) ---"
 if grep -q "python3\|python" "$PESS_ROOT/pess-install.sh" 2>/dev/null; then
-    if grep -q "Python 3" "$PESS_ROOT/pess-install.sh"; then
-        echo "  PASS  pess-install.sh 含 Python 版本检测"
+    if grep -q "pess.py install" "$PESS_ROOT/pess-install.sh"; then
+        echo "  PASS  pess-install.sh 调 pess.py (权威源 shim)"
         PASS=$((PASS + 1))
     else
-        echo "  FAIL  pess-install.sh 缺 Python 版本检测"
+        echo "  FAIL  pess-install.sh 缺 pess.py 调用"
         FAIL=$((FAIL + 1))
     fi
 else

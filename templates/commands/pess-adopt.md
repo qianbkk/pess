@@ -1,3 +1,8 @@
+---
+name: pess-adopt
+description: "Use when user is adding PESS to an existing project. Triggers 5-stage incremental adoption guide. Do not load for greenfield projects (use pess-init)."
+---
+
 # /pess-adopt — 为已有项目引入 PESS 规范（存量项目适配）
 
 > 适用场景：一个已有代码库，想要引入 PESS 规范但不想重建项目。

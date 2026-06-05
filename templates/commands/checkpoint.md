@@ -1,3 +1,8 @@
+---
+name: checkpoint
+description: "Use when user has completed a logical unit and is ready to commit. Triggers quality gate: coverage threshold, test pass, rollback protocol."
+---
+
 # /checkpoint — 质量门控与检查点提交
 
 按顺序执行，每步失败时停下来报告，不要跳过：

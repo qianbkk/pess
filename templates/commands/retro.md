@@ -1,3 +1,8 @@
+---
+name: retro
+description: "Use when user wants to review past activity. Triggers 7/30-day audit log statistics (command frequency, file hotspots, guard block rate)."
+---
+
 # /retro — 工程回顾 (OPT-024 消费层)
 
 > **触发条件**: 用户输入 /retro [N天] (默认 7 天)

@@ -1,80 +1,23 @@
 #!/bin/bash
-# pess-install.sh — Install PESS global components (run once, macOS/Linux)
+# pess-install.sh — PESS 安装 shim (v3.8.0)
+#
+# 权威源已迁移到 pess.py (Python), 本脚本为向后兼容薄包装.
 
 set -e
-
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-CLAUDE_DIR="$HOME/.claude"
-HOOKS_DIR="$CLAUDE_DIR/hooks"
-PESS_ROOT="$SCRIPT_DIR"
 
-echo "Installing PESS global components..."
-
-# 1. Create directories
-mkdir -p "$HOOKS_DIR"
-
-# 2. Copy hooks
-cp "$PESS_ROOT/hooks/guard_files.py" "$HOOKS_DIR/"
-cp "$PESS_ROOT/hooks/guard_commands.py" "$HOOKS_DIR/"
-echo "Hooks installed to $HOOKS_DIR"
-
-# 2.5 验证 Python 可用性 (OPT-003 配套, 跨平台一致性)
-PYTHON_OK=0
-for cmd in python python3 py; do
-    ver=$($cmd --version 2>&1 || true)
-    if echo "$ver" | grep -qE "^Python 3\.[89]|^Python 3\.1[0-9]|^Python 3\.1[2-9]"; then
-        echo "Python detected: $ver"
-        PYTHON_OK=1
-        break
-    fi
-done
-if [ "$PYTHON_OK" -eq 0 ]; then
-    echo "Warning: Python 3.8+ not detected. Hooks installed but may not run; install Python 3.8+ and ensure it is in PATH." >&2
-fi
-
-# 3. Write settings.json
-SETTINGS_PATH="$CLAUDE_DIR/settings.json"
-NEW_HOOKS_JSON='{
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Write|Edit|MultiEdit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python \"'"$HOOKS_DIR"'/guard_files.py\""
-          }
-        ]
-      },
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python \"'"$HOOKS_DIR"'/guard_commands.py\""
-          }
-        ]
-      }
-    ]
-  }
-}'
-
-if [ -f "$SETTINGS_PATH" ]; then
-    echo "Warning: $SETTINGS_PATH already exists. Please merge hooks manually:"
-    echo "$NEW_HOOKS_JSON"
+# 调用 Python 统一入口
+if command -v python3 >/dev/null 2>&1; then
+    PY=python3
+elif command -v python >/dev/null 2>&1; then
+    PY=python
 else
-    echo "$NEW_HOOKS_JSON" > "$SETTINGS_PATH"
-    echo "settings.json written"
+    echo "Error: python or python3 required" >&2
+    exit 3
 fi
 
-# 4. Copy global CLAUDE.md
-GLOBAL_CLAUDE="$CLAUDE_DIR/CLAUDE.md"
-if [ ! -f "$GLOBAL_CLAUDE" ]; then
-    cp "$PESS_ROOT/templates/global-CLAUDE.md" "$GLOBAL_CLAUDE"
-    echo "Global CLAUDE.md installed"
-else
-    echo "Global CLAUDE.md already exists, skipping"
-fi
+$PY "$SCRIPT_DIR/pess.py" install
 
 echo ""
-echo "PESS installation complete."
+echo "✅ PESS 安装完成 (via pess.py 权威源)"
+echo "如需自定义: python pess.py install --help"

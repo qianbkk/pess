@@ -1,7 +1,12 @@
+---
+name: clarify
+description: "Use when spec.md exists but contains ambiguous requirements. Generates Clarifications section in spec. Do not load when no spec exists (use direct exploration or /specify when implemented)."
+---
+
 # /clarify — 在已有 spec 时澄清模糊需求 (OPT-008)
 
 > **触发条件**: spec.md 或 feature-spec.md 已存在但含模糊需求时使用
-> **不要**与 brainstorming skill 混淆 — brainstorming 用于"无 spec 时探索"，/clarify 用于"已有 spec 时澄清"
+> **不要**与"无 spec 时探索"混淆 — 探索场景用户应直接对话, /clarify 用于"已有 spec 时澄清"
 > **依赖**: 无前置命令，可在 /plan 之前使用
 
 ---
@@ -79,19 +84,22 @@
 
 ---
 
-## 与 brainstorming skill 的边界
+## 与"无 spec 时探索"的边界
 
-| 维度 | /clarify | brainstorming skill |
-|------|----------|---------------------|
+| 维度 | /clarify | 手动 spec 探索 |
+|------|----------|----------------|
 | **触发** | spec.md 存在 | 无 spec |
 | **目的** | 消除模糊 | 探索新领域 |
 | **输出** | Clarifications 段 | spec 草稿 |
 | **何时用** | /plan 之前 | /clarify 之前 |
 
+> 注: PESS 当前没有独立 brainstorming 能力 (按辩论报告 §skills#5 拒绝),
+> 无 spec 时用户应直接用 Claude 对话探索, 或先用 /specify (待实现)
+
 ---
 
 ## 失败处理
 
-- **无 spec.md**: 输出 "❌ 未找到 docs/spec/*.md, 请先 /specify 生成 spec" 退出
+- **无 spec.md**: 输出 "❌ 未找到 docs/spec/*.md, 请先生成 spec (手动或 /specify 计划中)" 退出
 - **spec 完全清晰** (0 模糊点): 输出 "✅ spec 无模糊点, 可直接 /plan" 退出
 - **用户拒绝回答**: 标记 C-NNN 为 "pending" 状态, 提示继续 /plan 时会带歧义

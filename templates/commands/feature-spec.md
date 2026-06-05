@@ -1,3 +1,8 @@
+---
+name: feature-spec
+description: "Template for feature specifications. Used by /specify command (not a command itself). Do not invoke directly."
+---
+
 # Feature Spec: [功能名称]
 
 ## Overview

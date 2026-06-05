@@ -1,3 +1,8 @@
+---
+name: wrap
+description: "Use at end of work session. Triggers session-notes append + progress.md update + STATUS.md incremental. Do not load mid-session."
+---
+
 # /wrap — 会话收尾 (含 STATUS.md 增量更新, OPT-011+018 合并)
 
 **第零步：STATUS.md 增量更新 (OPT-018 合并)**

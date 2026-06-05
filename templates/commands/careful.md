@@ -1,3 +1,8 @@
+---
+name: careful
+description: "Use when user inputs a destructive bash command (rm -rf, DROP TABLE, write to /dev/sda). Triggers second-confirmation flow. Do not load for read-only commands."
+---
+
 # /careful — 危险命令二次确认 (OPT-015)
 
 > **触发条件**: 用户输入 /careful 后跟命令, 或 hook 拦截到危险命令时

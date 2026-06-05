@@ -1,3 +1,8 @@
+---
+name: clarify-arch
+description: "Use after /plan and before /change propose. Triggers 5-step architecture review (dependency/complexity/scalability/performance/security), outputs ADR draft."
+---
+
 # /clarify-arch — 架构决策审查 (OPT-016)
 
 > **触发条件**: 在 /plan 之后, /change propose 之前使用

@@ -32,7 +32,7 @@ description: "Load when user is working on a PESS-initialized project (presence 
 └─ /think (挑战假设)
 
 → 写正式功能规格
-   └─ /specify (生成 spec.md)
+   └─ 手动生成 spec.md (或等 /specify 计划)
       └─ /clarify (消除模糊)
 
 → 任务分解
