@@ -116,32 +116,37 @@ def test_guard_files_warn_core():
     code, stdout, stderr = run_hook(GUARD_FILES, {
         "tool_name": "Write", "tool_input": {"path": "/app/core/db.py"}
     })
-    _assert_warn(code, stdout, stderr, "/core/")
-    print(f"  PASS  guard_files SOFT_WARN [/core/]  exit 0 + warn")
+    # v3.8.0: SOFT_WARN 改走 stderr (与 auto_lint.py 一致)
+    assert code == 0, f"expected exit 0, got {code}"
+    assert "warn" in stderr, f"expected 'warn' in stderr, got: {stderr[:200]}"
+    print(f"  PASS  guard_files SOFT_WARN [/core/]  exit 0 + stderr warn")
 
 
 def test_guard_files_warn_migrations():
     code, stdout, stderr = run_hook(GUARD_FILES, {
         "tool_name": "Write", "tool_input": {"path": "/app/migrations/v1.py"}
     })
-    _assert_warn(code, stdout, stderr, "/migrations/")
-    print(f"  PASS  guard_files SOFT_WARN [/migrations/]  exit 0 + warn")
+    assert code == 0, f"expected exit 0, got {code}"
+    assert "warn" in stderr, f"expected 'warn' in stderr, got: {stderr[:200]}"
+    print(f"  PASS  guard_files SOFT_WARN [/migrations/]  exit 0 + stderr warn")
 
 
 def test_guard_files_warn_settings():
     code, stdout, stderr = run_hook(GUARD_FILES, {
         "tool_name": "Write", "tool_input": {"path": "/app/proj/settings.py"}
     })
-    _assert_warn(code, stdout, stderr, "settings.py")
-    print(f"  PASS  guard_files SOFT_WARN [settings.py]  exit 0 + warn")
+    assert code == 0, f"expected exit 0, got {code}"
+    assert "warn" in stderr, f"expected 'warn' in stderr, got: {stderr[:200]}"
+    print(f"  PASS  guard_files SOFT_WARN [settings.py]  exit 0 + stderr warn")
 
 
 def test_guard_files_warn_config():
     code, stdout, stderr = run_hook(GUARD_FILES, {
         "tool_name": "Write", "tool_input": {"path": "/app/proj/config.py"}
     })
-    _assert_warn(code, stdout, stderr, "config.py")
-    print(f"  PASS  guard_files SOFT_WARN [config.py]  exit 0 + warn")
+    assert code == 0, f"expected exit 0, got {code}"
+    assert "warn" in stderr, f"expected 'warn' in stderr, got: {stderr[:200]}"
+    print(f"  PASS  guard_files SOFT_WARN [config.py]  exit 0 + stderr warn")
 
 
 # ==================== guard_files.py — 无匹配边界 ====================

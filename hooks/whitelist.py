@@ -23,10 +23,25 @@ def load_whitelist() -> list[str]:
 
 
 def is_whitelisted(file_path: str, hard_block: bool = False) -> bool:
-    """路径是否在白名单 (hard_block 永远不被白名单)"""
+    """路径是否在白名单 (hard_block 永远不被白名单)
+
+    匹配规则:
+    - pattern 以 '/' 结尾 (e.g. .pess-test/) → 检查 file_path 含 /pattern 段
+    - pattern 是文件后缀 (e.g. .env) → endswith
+    - 其他 → startswith
+    """
     if hard_block:
         return False
     for pattern in load_whitelist():
-        if file_path.startswith(pattern) or file_path == pattern.rstrip("/"):
-            return True
+        pattern = pattern.rstrip("/")
+        if not pattern:
+            continue
+        if pattern.startswith("."):
+            # 后缀形式: 匹配路径中任何位置以 pattern 结尾
+            if file_path.endswith(pattern) or f"/{pattern}" in file_path:
+                return True
+        else:
+            # 目录形式: 路径中含 /pattern 段
+            if f"/{pattern}" in file_path or file_path.startswith(pattern + "/"):
+                return True
     return False

@@ -26,6 +26,12 @@ PYTEST_SUITES = [
     "test_auto_lint.py",            # 14 项 — PostToolUse lint
     "test_inject_context.py",       # 11 项 — SessionStart inject
     "test_enforce_constitution.py", # 5 项 — UserPromptSubmit 复习宪法 (OPT-028)
+    "test_utils.py",                # 6 项 — stdin JSON 异常处理 (OPT-021)
+    "test_engine.py",               # 9 项 — 模板引擎 3 原语 (OPT-013)
+    "test_pess.py",                 # 4 项 — pess.py 统一入口 (OPT-012)
+    "test_status_validator.py",     # 4 项 — STATUS.md 状态机 (OPT-014)
+    "test_async_audit.py",          # 7 项 — 异步 audit + 30 天滚动 (OPT-024 v3.8.0)
+    "test_whitelist.py",            # 5 项 — 路径白名单 (OPT-022 v3.8.0)
 ]
 
 
